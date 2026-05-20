@@ -10,8 +10,17 @@ export class Router {
 
     // Listen to hash change events
     window.addEventListener("hashchange", () => this.handleRouting());
-    // Listen to load events
-    window.addEventListener("DOMContentLoaded", () => this.handleRouting());
+
+    // First render: handle whichever phase of page load we're in.
+    // If the document already finished loading (the common case — this
+    // Router is constructed inside an existing DOMContentLoaded handler),
+    // run routing immediately so the home page actually appears. Otherwise
+    // wait for DOMContentLoaded.
+    if (document.readyState === "loading") {
+      window.addEventListener("DOMContentLoaded", () => this.handleRouting());
+    } else {
+      this.handleRouting();
+    }
   }
 
   handleRouting() {
