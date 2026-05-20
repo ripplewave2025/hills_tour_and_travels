@@ -1,0 +1,133 @@
+/* ==========================================
+   HILLS TOUR & TRAVELS — CSS DESIGN SYSTEM
+   ========================================== */
+
+:root {
+  /* --- Brand Colors (HSL-tailored for high contrast and luxury feel) --- */
+  --brand-h: 38;
+  --brand-s: 82%;
+  --brand-l: 57%;
+  --brand-color: hsl(var(--brand-h), var(--brand-s), var(--brand-l)); /* Premium Gold #E6A729 */
+  --brand-hover: hsl(var(--brand-h), var(--brand-s), 48%);
+  --brand-light: hsla(var(--brand-h), var(--brand-s), var(--brand-l), 0.15);
+  --brand-glow: hsla(var(--brand-h), var(--brand-s), var(--brand-l), 0.4);
+
+  /* --- Premium Dark Palette (Obsidian Deep Mountain Theme) --- */
+  --bg-base: #060913;       /* Ultra dark space cadet */
+  --bg-surface: #0b0f19;    /* Obsidian surface */
+  --bg-elevated: #121826;   /* Elevated card bg */
+  --bg-glass: rgba(11, 15, 25, 0.65); /* Transparent glass */
+
+  /* --- Text Palette --- */
+  --text-primary: #f8fafc;   /* Soft slate white */
+  --text-secondary: #94a3b8; /* Muted slate gray */
+  --text-muted: #64748b;     /* Muted dark gray */
+  --text-brand: var(--brand-color);
+
+  /* --- Contextual Status Colors --- */
+  --color-success: #10b981;    /* Vibrant Emerald */
+  --color-success-bg: rgba(16, 185, 129, 0.1);
+  --color-warning: #f59e0b;    /* Warm Amber */
+  --color-warning-bg: rgba(245, 158, 11, 0.1);
+  --color-danger: #ef4444;     /* Deep Coral Red */
+  --color-danger-bg: rgba(239, 68, 68, 0.1);
+  --color-info: #3b82f6;       /* Mountain Blue */
+  --color-info-bg: rgba(59, 130, 246, 0.1);
+
+  /* --- Modern Gradients --- */
+  --gradient-brand: linear-gradient(135deg, #f59e0b 0%, #e67e22 100%);
+  --gradient-dark: linear-gradient(180deg, #0b0f19 0%, #060913 100%);
+  --gradient-glass: linear-gradient(135deg, rgba(255, 255, 255, 0.07) 0%, rgba(255, 255, 255, 0.02) 100%);
+  --gradient-glow: radial-gradient(circle at top, var(--brand-light), transparent 70%);
+  --gradient-accent: linear-gradient(90deg, var(--brand-color) 0%, #ff7e5f 100%);
+
+  /* --- Premium Glassmorphism Specs --- */
+  --glass-border: rgba(255, 255, 255, 0.08);
+  --glass-border-hover: rgba(255, 255, 255, 0.18);
+  --glass-blur: 16px;
+  --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+  --glass-shadow-hover: 0 12px 40px 0 rgba(0, 0, 0, 0.5);
+
+  /* --- Standard Shadows --- */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.15), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  --shadow-brand-glow: 0 0 20px var(--brand-glow);
+
+  /* --- Sizing Systems --- */
+  --radius-xs: 4px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --radius-full: 9999px;
+
+  /* --- Transition Speeds --- */
+  --transition-fast: 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-normal: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* --- Fonts (Preloaded in index.html) --- */
+  --font-heading: 'Outfit', sans-serif;
+  --font-body: 'Inter', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+}
+
+/* --- Base Media Rules & Responsive Utilities --- */
+@media (max-width: 480px) {
+  :root {
+    --radius-xl: 16px;
+    --glass-blur: 10px;
+  }
+}
+
+/* --- Premium Animations & CSS Keyframes --- */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeRight {
+  from {
+    opacity: 0;
+    transform: translateX(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes pulseBrand {
+  0% { box-shadow: 0 0 0 0 rgba(230, 167, 41, 0.4); }
+  70% { box-shadow: 0 0 0 12px rgba(230, 167, 41, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(230, 167, 41, 0); }
+}
+
+@keyframes rotateLoader {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes bounceSlow {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+/* Apply Standard Animation Utility Classes */
+.animate-fade-in { animation: fadeIn var(--transition-normal) forwards; }
+.animate-fade-up { animation: fadeUp var(--transition-slow) forwards; }
+.animate-fade-right { animation: fadeRight var(--transition-slow) forwards; }
+.animate-bounce-slow { animation: bounceSlow 3s ease-in-out infinite; }
