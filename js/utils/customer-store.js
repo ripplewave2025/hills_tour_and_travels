@@ -43,6 +43,11 @@ export const CustomerStore = {
       is_estimated: !!booking.isEstimated,
     };
 
+    if (!supabase) {
+      lsAppend({ ...record, createdAt: new Date().toISOString() });
+      return { ...record, createdAt: new Date().toISOString(), _source: 'local' };
+    }
+
     const { data, error } = await supabase
       .from('bookings')
       .insert([record])
@@ -59,6 +64,8 @@ export const CustomerStore = {
   },
 
   async list() {
+    if (!supabase) return lsRead();
+
     const { data, error } = await supabase
       .from('bookings')
       .select('*')
@@ -73,6 +80,7 @@ export const CustomerStore = {
   },
 
   async deleteById(id) {
+    if (!supabase) return;
     const { error } = await supabase
       .from('bookings')
       .delete()
