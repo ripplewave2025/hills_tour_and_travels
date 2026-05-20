@@ -1340,3 +1340,73 @@ a {
   }
 }
 
+/* --- Mobile Performance & UX Improvements --- */
+
+/* Reduce expensive backdrop-filter on mobile */
+@media (max-width: 768px) {
+  .glass-panel {
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+  }
+
+  /* Hero: cap height so booking bar is immediately visible */
+  .hero-section {
+    min-height: auto;
+    padding: 100px 0 48px;
+  }
+
+  /* Quick booking bar: more breathing room on small screens */
+  .quick-booking-bar {
+    padding: 20px 16px;
+  }
+}
+
+/* Eliminate hover transforms on touch devices (no hover = no jank) */
+@media (hover: none) {
+  .glass-panel-hover:hover {
+    transform: none;
+    box-shadow: var(--glass-shadow);
+    border-color: var(--glass-border);
+  }
+
+  .btn:hover {
+    transform: none;
+  }
+
+  .social-icons a:hover {
+    transform: none;
+  }
+}
+
+/* Instant tap response — eliminates 300ms click delay */
+a, button, [role="button"], select, input {
+  touch-action: manipulation;
+}
+
+/* Respect reduced-motion preference */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Ensure all interactive elements meet 44px touch target minimum */
+@media (max-width: 768px) {
+  .btn {
+    min-height: 44px;
+    padding: 12px 20px;
+  }
+
+  .input-glass, select.input-glass {
+    min-height: 44px;
+  }
+
+  .nav-hamburger {
+    min-width: 44px;
+    min-height: 44px;
+  }
+}
+

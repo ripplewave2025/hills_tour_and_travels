@@ -19,7 +19,7 @@ export const Home = {
     return `
       <!-- 1. Cinematic Hero Section -->
       <section class="hero-section">
-        <div class="hero-background animate-fade-in" style="background-image: linear-gradient(rgba(6, 9, 19, 0.4), #060913), url('https://images.unsplash.com/photo-1544735716-392fe2489ffa?auto=format&fit=crop&q=80&w=1600');"></div>
+        <div class="hero-background animate-fade-in" style="background-image: linear-gradient(rgba(6, 9, 19, 0.4), #060913), url('https://images.unsplash.com/photo-1544735716-392fe2489ffa?auto=format&fit=crop&q=75&w=${window.innerWidth <= 768 ? 800 : 1600}');"></div>
         <div class="container hero-container">
           <div class="hero-content text-center animate-fade-up">
             <span class="badge badge-brand mb-1"><i class="fa-solid fa-mountain"></i> Elevating Mountain Travel</span>
