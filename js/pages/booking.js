@@ -567,27 +567,22 @@ export const Booking = {
     const bookingId = "HT" + Math.floor(100000 + Math.random() * 900000);
     const summary = this.getPricingSummary();
 
-    // Persist a customer record locally so the operator can review bookings
-    // at #/admin/bookings without a backend.
-    try {
-      CustomerStore.saveBooking({
-        bookingId,
-        name: this.state.userDetails.name,
-        phone: this.state.userDetails.phone,
-        email: this.state.userDetails.email,
-        pickup: getTerminalName(this.state.from),
-        drop: getTerminalName(this.state.to),
-        date: this.state.date,
-        time: this.state.time,
-        vehicle: vehicles.find(v => v.id === this.state.vehicleId)?.name || this.state.vehicleId,
-        passengers: this.state.passengers,
-        days: this.state.days,
-        price: summary.total,
-        isEstimated: !!summary.isEstimated
-      });
-    } catch (err) {
-      console.warn('[Booking] CustomerStore save failed:', err);
-    }
+    // Fire-and-forget: save to Supabase (falls back to localStorage if offline)
+    CustomerStore.saveBooking({
+      bookingId,
+      name: this.state.userDetails.name,
+      phone: this.state.userDetails.phone,
+      email: this.state.userDetails.email,
+      pickup: getTerminalName(this.state.from),
+      drop: getTerminalName(this.state.to),
+      date: this.state.date,
+      time: this.state.time,
+      vehicle: vehicles.find(v => v.id === this.state.vehicleId)?.name || this.state.vehicleId,
+      passengers: this.state.passengers,
+      days: this.state.days,
+      price: summary.total,
+      isEstimated: !!summary.isEstimated
+    }).catch(err => console.warn('[Booking] save failed:', err));
     
     // Hide Right Summary Panel entirely during confirmation stage
     const summaryRightPanel = document.getElementById("booking-summary-panel");

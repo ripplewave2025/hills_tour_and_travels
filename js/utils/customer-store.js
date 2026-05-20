@@ -1,67 +1,90 @@
 /* ==========================================
-   HILLS TOUR & TRAVELS — CUSTOMER LOG (LOCAL)
-   ==========================================
-   Persists confirmed bookings to browser localStorage.
-   No backend yet — viewable at #/admin/bookings.
-   Swap saveBooking() body for a fetch() POST when ready.
+   HILLS TOUR & TRAVELS — CUSTOMER BOOKING STORE
+   Writes to Supabase `bookings` table.
+   Falls back to localStorage if Supabase is unreachable.
    ========================================== */
 
-const STORAGE_KEY = 'htt_bookings_v1';
+import { supabase } from './supabase.js';
 
-function readAll() {
+const LS_KEY = 'htt_bookings_v1';
+
+function lsRead() {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
+    const raw = localStorage.getItem(LS_KEY);
     return raw ? JSON.parse(raw) : [];
-  } catch (err) {
-    console.warn('[customer-store] Could not parse stored bookings:', err);
-    return [];
-  }
+  } catch { return []; }
 }
 
-function writeAll(arr) {
+function lsAppend(record) {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(arr));
-  } catch (err) {
-    console.error('[customer-store] Failed to persist bookings:', err);
+    const all = lsRead();
+    all.unshift(record);
+    localStorage.setItem(LS_KEY, JSON.stringify(all));
+  } catch (e) {
+    console.warn('[customer-store] localStorage write failed:', e);
   }
 }
 
 export const CustomerStore = {
-  saveBooking(booking) {
-    const all = readAll();
+  async saveBooking(booking) {
     const record = {
-      bookingId: booking.bookingId,
-      name: booking.name || '',
-      phone: booking.phone || '',
-      email: booking.email || '',
-      pickup: booking.pickup || '',
-      drop: booking.drop || '',
-      date: booking.date || '',
-      time: booking.time || '',
-      vehicle: booking.vehicle || '',
-      passengers: booking.passengers || 0,
-      days: booking.days || 1,
-      price: booking.price || 0,
-      isEstimated: !!booking.isEstimated,
-      createdAt: new Date().toISOString()
+      booking_id:   booking.bookingId,
+      name:         booking.name        || '',
+      phone:        booking.phone       || '',
+      email:        booking.email       || '',
+      pickup:       booking.pickup      || '',
+      drop:         booking.drop        || '',
+      travel_date:  booking.date        || null,
+      travel_time:  booking.time        || null,
+      vehicle:      booking.vehicle     || '',
+      passengers:   booking.passengers  || 0,
+      days:         booking.days        || 1,
+      price:        booking.price       || 0,
+      is_estimated: !!booking.isEstimated,
     };
-    all.unshift(record);
-    writeAll(all);
-    return record;
+
+    const { data, error } = await supabase
+      .from('bookings')
+      .insert([record])
+      .select()
+      .single();
+
+    if (error) {
+      console.warn('[customer-store] Supabase insert failed, falling back to localStorage:', error.message);
+      lsAppend({ ...record, createdAt: new Date().toISOString() });
+      return { ...record, createdAt: new Date().toISOString(), _source: 'local' };
+    }
+
+    return { ...data, _source: 'supabase' };
   },
 
-  list() {
-    return readAll();
+  async list() {
+    const { data, error } = await supabase
+      .from('bookings')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.warn('[customer-store] Supabase fetch failed, reading localStorage:', error.message);
+      return lsRead();
+    }
+
+    return data || [];
   },
 
-  clear() {
-    writeAll([]);
+  async deleteById(id) {
+    const { error } = await supabase
+      .from('bookings')
+      .delete()
+      .eq('booking_id', id);
+
+    if (error) console.warn('[customer-store] delete failed:', error.message);
   },
 
-  toCsv() {
-    const all = readAll();
+  async toCsv() {
+    const all = await this.list();
     if (all.length === 0) return '';
-    const headers = ['bookingId','createdAt','name','phone','email','pickup','drop','date','time','vehicle','passengers','days','price','isEstimated'];
+    const headers = ['booking_id','created_at','name','phone','email','pickup','drop','travel_date','travel_time','vehicle','passengers','days','price','is_estimated'];
     const escape = (v) => {
       const s = String(v ?? '');
       return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
