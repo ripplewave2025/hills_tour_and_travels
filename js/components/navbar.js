@@ -37,12 +37,19 @@ export const Navbar = {
           <ul class="nav-links">
             <li><a href="#/" class="nav-link" id="nav-home">Home</a></li>
             <li><a href="#/packages" class="nav-link" id="nav-packages">Tour Packages</a></li>
+            <li><a href="#/packages?tab=destinations" class="nav-link" id="nav-destinations">Destinations</a></li>
+            <li><a href="#/packages?tab=experiences" class="nav-link" id="nav-experiences">Experiences</a></li>
             <li><a href="#/route" class="nav-link" id="nav-route">Build a Route</a></li>
             <li><a href="#/booking" class="btn btn-primary btn-sm nav-cta">Book Taxi <i class="fa-solid fa-arrow-right"></i></a></li>
           </ul>
 
-          <!-- Right cluster: language toggle + hamburger -->
+          <!-- Right cluster: WhatsApp + language toggle + hamburger -->
           <div class="navbar-right">
+            <a href="https://wa.me/919907219843" target="_blank" rel="noopener noreferrer" class="navbar-whatsapp-btn" title="Contact support on WhatsApp">
+              <i class="fa-brands fa-whatsapp"></i>
+              <span class="navbar-whatsapp-number">+91 99072 19843</span>
+            </a>
+
             <div class="navbar-lang" id="navbar-lang">
               <button type="button" class="navbar-lang-btn" id="navbar-lang-btn" aria-haspopup="listbox" aria-expanded="false" aria-label="Change language">
                 <i class="fa-solid fa-globe"></i>
@@ -77,10 +84,20 @@ export const Navbar = {
             </a>
             <button class="drawer-close" id="drawer-close-trigger"><i class="fa-solid fa-xmark"></i></button>
           </div>
+          
+          <div class="drawer-whatsapp-box">
+            <a href="https://wa.me/919907219843" target="_blank" rel="noopener noreferrer" class="drawer-whatsapp-link">
+              <i class="fa-brands fa-whatsapp"></i> Chat Live Support
+              <span class="drawer-whatsapp-num">+91 99072 19843</span>
+            </a>
+          </div>
+
           <ul class="drawer-links">
             <li><a href="#/" class="drawer-link" id="drawer-home"><i class="fa-solid fa-house"></i> Home</a></li>
-            <li><a href="#/packages" class="drawer-link" id="drawer-packages"><i class="fa-solid fa-route"></i> Tour Packages</a></li>
-            <li><a href="#/route" class="drawer-link" id="drawer-route"><i class="fa-solid fa-map-location-dot"></i> Build a Route</a></li>
+            <li><a href="#/packages" class="drawer-link" id="drawer-packages"><i class="fa-solid fa-boxes-packing"></i> Tour Packages</a></li>
+            <li><a href="#/packages?tab=destinations" class="drawer-link" id="drawer-destinations"><i class="fa-solid fa-map-location-dot"></i> Destinations</a></li>
+            <li><a href="#/packages?tab=experiences" class="drawer-link" id="drawer-experiences"><i class="fa-solid fa-sparkles"></i> Experiences</a></li>
+            <li><a href="#/route" class="drawer-link" id="drawer-route"><i class="fa-solid fa-compass-drafting"></i> Build a Route</a></li>
             <li style="margin-top: 20px;">
               <a href="#/booking" class="btn btn-primary nav-cta-mobile"><i class="fa-solid fa-taxi"></i> Book Ride Now</a>
             </li>
@@ -138,8 +155,16 @@ export const Navbar = {
         document.getElementById("nav-home")?.classList.add("active");
         document.getElementById("drawer-home")?.classList.add("active");
       } else if (hash.startsWith("#/packages")) {
-        document.getElementById("nav-packages")?.classList.add("active");
-        document.getElementById("drawer-packages")?.classList.add("active");
+        if (hash.includes("tab=destinations")) {
+          document.getElementById("nav-destinations")?.classList.add("active");
+          document.getElementById("drawer-destinations")?.classList.add("active");
+        } else if (hash.includes("tab=experiences")) {
+          document.getElementById("nav-experiences")?.classList.add("active");
+          document.getElementById("drawer-experiences")?.classList.add("active");
+        } else {
+          document.getElementById("nav-packages")?.classList.add("active");
+          document.getElementById("drawer-packages")?.classList.add("active");
+        }
       } else if (hash.startsWith("#/route") || hash.startsWith("#/discover")) {
         document.getElementById("nav-route")?.classList.add("active");
         document.getElementById("drawer-route")?.classList.add("active");

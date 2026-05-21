@@ -1,48 +1,132 @@
 /* ==========================================
-   HILLS TOUR & TRAVELS — FANNED DESTINATION SLIDER
+   HILLS TOUR & TRAVELS — SIGHTSEEING SWIPER (TINDER DECK)
    ==========================================
-   Lead full-bleed card with name + tagline + "Book This One" CTA;
-   peek cards stacked to the right. Prev / Next arrows reorder the
-   deck. Touch swipe also advances. Tapping the CTA on the active
-   card opens a bottom-sheet listing every package tied to that
-   destination with Book Now deep-links into /booking.
+   A highly polished, responsive Tinder-style card deck that stacks
+   cards in the center of the viewport, eliminating empty top space.
+   Supports touch/mouse dragging to flip cards and a dual-tab toggle
+   ("Destinations" vs "Experiences") connected dynamically to the navbar.
    ========================================== */
 
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { destinations } from '../../data/destinations.js';
 import { packages } from '../../data/packages.js';
 
-// Per-destination tint so destinations sharing a placeholder photo
-// still feel visually distinct.
+// Pre-curated segments based on customer personas
+const AUDIENCE_CATEGORIES = [
+  {
+    id: 'family',
+    name: 'Family Getaways',
+    tagline: 'Create memories together',
+    description: 'Carefully paced, comfortable itineraries with spacious vehicles, professional local drivers, and child-friendly sightseeing stops.',
+    elevation: 'Relaxed Pace',
+    bestSeason: 'Year-round',
+    permitRequired: false,
+    image: 'https://images.unsplash.com/photo-1502086223501-7ea6ecd79368?auto=format&fit=crop&q=80&w=1200',
+    packageIds: ['darjeeling-5-point', 'mirik-lake-bokar', 'darjeeling-toy-train-tea', 'kalimpong-heritage-5pt']
+  },
+  {
+    id: 'romantic',
+    name: 'Romantic Escapes',
+    tagline: 'Love in the misty peaks',
+    description: 'Spectacular sunrise points, private tea estate walks, and quiet offbeat village homestays tailored exclusively for couples.',
+    elevation: 'High Romance',
+    bestSeason: 'Oct–May',
+    permitRequired: false,
+    image: 'https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?auto=format&fit=crop&q=80&w=1200',
+    packageIds: ['lamahatta-takdah-tinchuley', 'mirik-lake-bokar', 'darjeeling-tiger-hill']
+  },
+  {
+    id: 'solo',
+    name: 'Solo Explorers',
+    tagline: 'Your journey, your pace',
+    description: 'Low-friction transit routes, rustic riverside camping, and immersive homestays for independent mountain backpackers.',
+    elevation: 'Self-guided',
+    bestSeason: 'Oct–May',
+    permitRequired: false,
+    image: 'https://images.unsplash.com/photo-1501555088652-021faa106b9b?auto=format&fit=crop&q=80&w=1200',
+    packageIds: ['kurseong-heritage-6pt', 'siliguri-gateway-5pt', 'darjeeling-rock-garden']
+  },
+  {
+    id: 'friends',
+    name: 'Friend Squads',
+    tagline: 'Adventure awaits the pack',
+    description: 'White-water rafting, overnight riverside camping, and high-altitude border crossings designed for active group excursions.',
+    elevation: 'High Energy',
+    bestSeason: 'Oct–May',
+    permitRequired: true,
+    image: 'https://images.unsplash.com/photo-1539635278303-d4002c07eae3?auto=format&fit=crop&q=80&w=1200',
+    packageIds: ['teesta-river-adventure', 'gangtok-nathula-pass', 'sikkim-north-expedition']
+  },
+  {
+    id: 'corporate',
+    name: 'Corporate Offsites',
+    tagline: 'Unwind, align, and inspire',
+    description: 'Seamless group transport, riverside team bonfires, and premium resort partnerships for corporate mountain getaways.',
+    elevation: 'Premium Team',
+    bestSeason: 'Oct–Apr',
+    permitRequired: false,
+    image: 'https://images.unsplash.com/photo-1491438590914-bc09fcaaf77a?auto=format&fit=crop&q=80&w=1200',
+    packageIds: ['teesta-river-adventure', 'gangtok-tsomgo-circuit', 'siliguri-gateway-5pt']
+  },
+  {
+    id: 'luxury',
+    name: 'Luxury & Custom',
+    tagline: 'Ultra-premium comfort',
+    description: 'Premium SUV fleet (Innova Crysta), selected luxury suites, private guided tours, and fully managed protected area permits.',
+    elevation: 'VIP Service',
+    bestSeason: 'Year-round',
+    permitRequired: true,
+    image: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&q=80&w=1200',
+    packageIds: ['sikkim-north-expedition', 'bhutan-thunder-dragon-voyage', 'nepal-borderlands-expedition']
+  }
+];
+
 const TINTS = {
-  darjeeling:        'linear-gradient(180deg, rgba(245, 158, 11, 0.10) 0%, rgba(6, 9, 19, 0.88) 100%)',
-  gangtok:           'linear-gradient(180deg, rgba(56, 189, 248, 0.10) 0%, rgba(6, 9, 19, 0.88) 100%)',
-  bhutan:            'linear-gradient(180deg, rgba(244, 114, 182, 0.10) 0%, rgba(6, 9, 19, 0.88) 100%)',
-  nepal:             'linear-gradient(180deg, rgba(248, 113, 113, 0.10) 0%, rgba(6, 9, 19, 0.88) 100%)',
-  siliguri:          'linear-gradient(180deg, rgba(167, 139, 250, 0.10) 0%, rgba(6, 9, 19, 0.88) 100%)',
-  kalimpong:         'linear-gradient(180deg, rgba(45, 212, 191, 0.12) 0%, rgba(6, 9, 19, 0.88) 100%)',
-  kurseong:          'linear-gradient(180deg, rgba(132, 204, 22, 0.12) 0%, rgba(6, 9, 19, 0.88) 100%)',
-  mirik:             'linear-gradient(180deg, rgba(14, 165, 233, 0.14) 0%, rgba(6, 9, 19, 0.88) 100%)',
-  sittong:           'linear-gradient(180deg, rgba(251, 146, 60, 0.14) 0%, rgba(6, 9, 19, 0.88) 100%)',
-  'lava-lolegaon':   'linear-gradient(180deg, rgba(16, 185, 129, 0.14) 0%, rgba(6, 9, 19, 0.88) 100%)',
-  'lamahatta-takdah':'linear-gradient(180deg, rgba(217, 119, 6, 0.14) 0%, rgba(6, 9, 19, 0.88) 100%)',
-  'reshi-khola':     'linear-gradient(180deg, rgba(59, 130, 246, 0.14) 0%, rgba(6, 9, 19, 0.88) 100%)',
-  'darjeeling-zoo':  'linear-gradient(180deg, rgba(239, 68, 68, 0.14) 0%, rgba(6, 9, 19, 0.88) 100%)',
-  'teesta':          'linear-gradient(180deg, rgba(20, 184, 166, 0.16) 0%, rgba(6, 9, 19, 0.88) 100%)'
+  darjeeling:        'linear-gradient(180deg, rgba(245, 158, 11, 0.05) 0%, rgba(6, 9, 19, 0.92) 100%)',
+  gangtok:           'linear-gradient(180deg, rgba(56, 189, 248, 0.05) 0%, rgba(6, 9, 19, 0.92) 100%)',
+  bhutan:            'linear-gradient(180deg, rgba(244, 114, 182, 0.05) 0%, rgba(6, 9, 19, 0.92) 100%)',
+  nepal:             'linear-gradient(180deg, rgba(248, 113, 113, 0.05) 0%, rgba(6, 9, 19, 0.92) 100%)',
+  family:            'linear-gradient(180deg, rgba(34, 197, 94, 0.05) 0%, rgba(6, 9, 19, 0.92) 100%)',
+  romantic:          'linear-gradient(180deg, rgba(236, 72, 153, 0.05) 0%, rgba(6, 9, 19, 0.92) 100%)',
+  solo:              'linear-gradient(180deg, rgba(59, 130, 246, 0.05) 0%, rgba(6, 9, 19, 0.92) 100%)',
+  friends:           'linear-gradient(180deg, rgba(168, 85, 247, 0.05) 0%, rgba(6, 9, 19, 0.92) 100%)',
+  corporate:         'linear-gradient(180deg, rgba(234, 179, 8, 0.05) 0%, rgba(6, 9, 19, 0.92) 100%)',
+  luxury:            'linear-gradient(180deg, rgba(20, 184, 166, 0.05) 0%, rgba(6, 9, 19, 0.92) 100%)'
 };
 
-const defaultTint = 'linear-gradient(180deg, rgba(245, 158, 11, 0.10) 0%, rgba(6, 9, 19, 0.88) 100%)';
+const defaultTint = 'linear-gradient(180deg, rgba(245, 158, 11, 0.05) 0%, rgba(6, 9, 19, 0.92) 100%)';
 
-function itemBackground(dest) {
-  const tint = TINTS[dest.id] || defaultTint;
-  return `${tint}, url(${dest.image})`;
+function itemBackground(item) {
+  const tint = TINTS[item.id] || defaultTint;
+  return `${tint}, url(${item.image})`;
 }
 
-export function SwipePackages() {
-  const [order, setOrder] = useState(() => destinations.map((_, i) => i));
-  const [openDest, setOpenDest] = useState(null);
-  const touchRef = useRef({ start: 0, active: false });
+export function SwipePackages({ query }) {
+  // Sync tab with URL query parameter, e.g., ?tab=experiences or ?tab=destinations
+  const getInitialTab = () => {
+    if (query?.tab === 'experiences') return 'experiences';
+    if (query?.tab === 'destinations') return 'destinations';
+    return 'destinations';
+  };
+
+  const [activeTab, setActiveTab] = useState(getInitialTab);
+  const items = activeTab === 'experiences' ? AUDIENCE_CATEGORIES : destinations;
+  
+  // Track deck sequence array
+  const [order, setOrder] = useState(() => items.map((_, i) => i));
+  const [openItem, setOpenItem] = useState(null);
+
+  // Sync state if navbar triggers route query change
+  useEffect(() => {
+    const nextTab = getInitialTab();
+    setActiveTab(nextTab);
+  }, [query?.tab]);
+
+  // Reset deck indexes when active tab toggles
+  useEffect(() => {
+    setOrder(items.map((_, i) => i));
+  }, [activeTab, items.length]);
 
   const next = useCallback(() => {
     setOrder((o) => [...o.slice(1), o[0]]);
@@ -52,103 +136,192 @@ export function SwipePackages() {
     setOrder((o) => [o[o.length - 1], ...o.slice(0, -1)]);
   }, []);
 
-  const items = order.map((idx) => destinations[idx]);
-  // Active card is the 2nd DOM child (matches the reference design)
-  const activeDest = items[1] || items[0];
-
-  const onTouchStart = (e) => {
-    touchRef.current.start = e.touches[0].clientX;
-    touchRef.current.active = true;
-  };
-  const onTouchEnd = (e) => {
-    if (!touchRef.current.active) return;
-    const delta = e.changedTouches[0].clientX - touchRef.current.start;
-    touchRef.current.active = false;
-    if (delta < -50) next();
-    else if (delta > 50) prev();
+  const handleTabChange = (tab) => {
+    setActiveTab(tab);
+    // Update hash query silently so it matches URL structure
+    window.location.hash = `#/packages?tab=${tab}`;
   };
 
   return (
     <div className="ps-root">
       <header className="ps-header">
-        <span className="badge badge-brand">
-          <i className="fa-solid fa-sparkles" /> Curated Corridors
-        </span>
-        <h1 className="ps-title">Pick Your Mountain</h1>
-        <p className="ps-sub">Tap an arrow or swipe to flip through destinations. Book what you love.</p>
+        <div className="ps-header-main">
+          <div className="ps-header-left animate-fade-in">
+            <span className="badge badge-brand">
+              <i className="fa-solid fa-sparkles" /> {activeTab === 'experiences' ? 'Audience Tiers' : 'Corridor Explorer'}
+            </span>
+            <h1 className="ps-title">{activeTab === 'experiences' ? 'Experiences' : 'Destinations'}</h1>
+            <p className="ps-sub">
+              {activeTab === 'experiences'
+                ? 'Handcrafted tours optimized for specific traveler profiles.'
+                : 'Browse pristine geographic sightseeing circuits.'}
+            </p>
+          </div>
+
+          <div className="ps-tabs-container">
+            <button
+              type="button"
+              className={`ps-tab-btn ${activeTab === 'destinations' ? 'is-active' : ''}`}
+              onClick={() => handleTabChange('destinations')}
+            >
+              <i className="fa-solid fa-map-location-dot" /> Destinations
+            </button>
+            <button
+              type="button"
+              className={`ps-tab-btn ${activeTab === 'experiences' ? 'is-active' : ''}`}
+              onClick={() => handleTabChange('experiences')}
+            >
+              <i className="fa-solid fa-sparkles" /> Experiences
+            </button>
+          </div>
+        </div>
       </header>
 
-      <div
-        className="ps-stage"
-        onTouchStart={onTouchStart}
-        onTouchEnd={onTouchEnd}
-      >
+      {/* Tinder Overlapping Stack Container */}
+      <div className="ps-stage">
         <div className="ps-deck">
-          {items.map((dest) => (
-            <div
-              key={dest.id}
-              className="ps-item"
-              style={{ background: itemBackground(dest), backgroundSize: 'cover', backgroundPosition: 'center' }}
-            >
-              <div className="ps-content">
-                {dest.permitRequired && (
-                  <span className="ps-chip ps-chip-warn">
-                    <i className="fa-solid fa-id-card" /> Permit
-                  </span>
+          {order.map((itemIdx, stackIndex) => {
+            const item = items[itemIdx];
+            if (!item) return null;
+
+            // Tinder layers styling: index 0 is on top, 1 peeks, 2 stands back.
+            // Cards are rendered in reverse order in DOM so index 0 stays on top.
+            const isTopCard = stackIndex === 0;
+            const isSecondCard = stackIndex === 1;
+            const isThirdCard = stackIndex === 2;
+            const isVisible = stackIndex < 3;
+
+            let scale = 0.85;
+            let yOffset = 30;
+            let opacity = 0;
+            let pointerEvents = 'none';
+
+            if (isTopCard) {
+              scale = 1.0;
+              yOffset = 0;
+              opacity = 1;
+              pointerEvents = 'auto';
+            } else if (isSecondCard) {
+              scale = 0.94;
+              yOffset = 15;
+              opacity = 0.85;
+              pointerEvents = 'none';
+            } else if (isThirdCard) {
+              scale = 0.88;
+              yOffset = 30;
+              opacity = 0.55;
+              pointerEvents = 'none';
+            }
+
+            return (
+              <motion.div
+                key={item.id}
+                className={`ps-item-tinder ${isTopCard ? 'is-active-card' : ''}`}
+                style={{
+                  backgroundImage: itemBackground(item),
+                  zIndex: items.length - stackIndex,
+                  pointerEvents
+                }}
+                animate={{
+                  scale,
+                  y: yOffset,
+                  opacity,
+                  transition: { duration: 0.45, ease: [0.25, 1, 0.5, 1] }
+                }}
+                drag={isTopCard ? 'x' : false}
+                dragConstraints={{ left: 0, right: 0 }}
+                dragElastic={0.65}
+                onDragEnd={(event, info) => {
+                  const threshold = 110;
+                  if (info.offset.x < -threshold) {
+                    next(); // Swiped left
+                  } else if (info.offset.x > threshold) {
+                    prev(); // Swiped right
+                  }
+                }}
+              >
+                {/* Visual Content inside the top card */}
+                {isTopCard && (
+                  <div className="ps-content animate-fade-in">
+                    <div className="ps-meta-row">
+                      {item.permitRequired && (
+                        <span className="ps-chip ps-chip-warn">
+                          <i className="fa-solid fa-id-card" /> Permit Required
+                        </span>
+                      )}
+                      <span className="ps-badge-tag">
+                        <i className="fa-solid fa-mountain" /> {item.elevation}
+                      </span>
+                    </div>
+                    
+                    <h2 className="ps-name">{item.name}</h2>
+                    <p className="ps-desc">{item.tagline}</p>
+                    <p className="ps-long-desc">{item.description}</p>
+                    
+                    <button
+                      type="button"
+                      className="ps-cta"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setOpenItem(item);
+                      }}
+                    >
+                      <span>See Packages</span>
+                      <i className="fa-solid fa-arrow-right" aria-hidden="true" />
+                    </button>
+                  </div>
                 )}
-                <h2 className="ps-name">{dest.name}</h2>
-                <p className="ps-desc">{dest.tagline}</p>
-                <button
-                  type="button"
-                  className="ps-cta"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setOpenDest(dest);
-                  }}
-                >
-                  <span>Book This One</span>
-                  <i className="fa-solid fa-arrow-right" aria-hidden="true" />
-                </button>
-              </div>
-            </div>
-          ))}
+              </motion.div>
+            );
+          })}
         </div>
 
+        {/* Floating Tinder Navigation Controls */}
         <div className="ps-nav" role="group" aria-label="Slider navigation">
           <button
             type="button"
             className="ps-btn ps-prev"
             onClick={prev}
-            aria-label="Previous destination"
+            aria-label="Previous card"
           >
             <i className="fa-solid fa-chevron-left" aria-hidden="true" />
           </button>
+          
+          <div className="ps-nav-info">
+            <span className="ps-counter-cur">{(order[0] ?? 0) + 1}</span>
+            <span className="ps-counter-sep">/</span>
+            <span>{items.length}</span>
+          </div>
+
           <button
             type="button"
             className="ps-btn ps-next"
             onClick={next}
-            aria-label="Next destination"
+            aria-label="Next card"
           >
             <i className="fa-solid fa-chevron-right" aria-hidden="true" />
           </button>
         </div>
       </div>
 
-      <div className="ps-counter" aria-live="polite">
-        <span className="ps-counter-cur">{(order[1] ?? order[0]) + 1}</span>
-        <span className="ps-counter-sep">of</span>
-        <span>{destinations.length}</span>
-      </div>
-
       <AnimatePresence>
-        {openDest && <BottomSheet dest={openDest} onClose={() => setOpenDest(null)} />}
+        {openItem && (
+          <BottomSheet
+            item={openItem}
+            activeTab={activeTab}
+            onClose={() => setOpenItem(null)}
+          />
+        )}
       </AnimatePresence>
     </div>
   );
 }
 
-function BottomSheet({ dest, onClose }) {
-  const pkgs = packages.filter((p) => p.destinationId === dest.id);
+function BottomSheet({ item, activeTab, onClose }) {
+  // Query matching packages based on tab mode (destinationId vs packageIds array)
+  const pkgs = activeTab === 'experiences'
+    ? packages.filter((p) => item.packageIds.includes(p.id))
+    : packages.filter((p) => p.destinationId === item.id);
 
   return (
     <motion.div
@@ -157,7 +330,7 @@ function BottomSheet({ dest, onClose }) {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      transition={{ duration: 0.2 }}
+      transition={{ duration: 0.25 }}
     >
       <motion.div
         className="sw-sheet"
@@ -165,19 +338,19 @@ function BottomSheet({ dest, onClose }) {
         initial={{ y: '100%' }}
         animate={{ y: 0 }}
         exit={{ y: '100%' }}
-        transition={{ type: 'spring', damping: 30, stiffness: 280 }}
+        transition={{ type: 'spring', damping: 28, stiffness: 260 }}
         drag="y"
         dragConstraints={{ top: 0, bottom: 0 }}
         dragElastic={{ top: 0, bottom: 0.4 }}
         onDragEnd={(_, info) => {
-          if (info.offset.y > 140 || info.velocity.y > 700) onClose();
+          if (info.offset.y > 140 || info.velocity.y > 600) onClose();
         }}
       >
         <div className="sw-sheet-handle" aria-hidden="true" />
         <header className="sw-sheet-header">
           <div>
-            <h2>{dest.name}</h2>
-            <p>{dest.tagline}</p>
+            <h2>{item.name}</h2>
+            <p>{item.tagline}</p>
           </div>
           <button
             type="button"
@@ -189,9 +362,9 @@ function BottomSheet({ dest, onClose }) {
           </button>
         </header>
 
-        {dest.alert && (
+        {item.alert && (
           <div className="sw-sheet-alert">
-            <i className="fa-solid fa-circle-info" /> {dest.alert}
+            <i className="fa-solid fa-circle-info" /> {item.alert}
           </div>
         )}
 
@@ -200,12 +373,11 @@ function BottomSheet({ dest, onClose }) {
             <i className="fa-solid fa-hourglass-half" />
             <h3>Packages Coming Soon</h3>
             <p>
-              We&rsquo;re curating handcrafted journeys for {dest.name}. Reach out and we&rsquo;ll
-              plan a custom trip tailored to your dates.
+              We are curating spectacular bespoke itineraries for this experience. Enquire directly on WhatsApp to book.
             </p>
             <a
               href={`https://wa.me/919907219843?text=${encodeURIComponent(
-                `Hi! I'd like to plan a custom trip to ${dest.name}.`
+                `Hi! I'd like to plan a custom trip for ${item.name}.`
               )}`}
               target="_blank"
               rel="noopener noreferrer"
@@ -225,8 +397,8 @@ function BottomSheet({ dest, onClose }) {
                   </span>
                 </div>
                 <p className="sw-pkg-desc">
-                  {pkg.description.length > 160
-                    ? `${pkg.description.slice(0, 160)}…`
+                  {pkg.description.length > 150
+                    ? `${pkg.description.slice(0, 150)}…`
                     : pkg.description}
                 </p>
                 <div className="sw-pkg-stops">
@@ -241,12 +413,12 @@ function BottomSheet({ dest, onClose }) {
                 </div>
                 {pkg.suvOnly && (
                   <div className="sw-pkg-flag">
-                    <i className="fa-solid fa-snowflake" /> SUV-only (high-altitude permits)
+                    <i className="fa-solid fa-snowflake" /> SUV mandatory (PAP high-altitude zones)
                   </div>
                 )}
                 <div className="sw-pkg-foot">
                   <div className="sw-pkg-price">
-                    <span className="sw-pkg-price-lbl">From</span>
+                    <span className="sw-pkg-price-lbl">Starting Fare</span>
                     <span className="sw-pkg-price-val">
                       ₹{(pkg.priceSedan || pkg.priceSuv).toLocaleString('en-IN')}
                     </span>

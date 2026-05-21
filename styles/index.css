@@ -2229,9 +2229,6 @@ a, button, [role="button"], select, input {
   }
 }
 
-/* =====================================================
-   PACKAGE SLIDER — Fanned-card destination deck
-   ===================================================== */
 .ps-root {
   position: relative;
   min-height: 100vh;
@@ -2242,13 +2239,26 @@ a, button, [role="button"], select, input {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 96px 16px 32px;
+  padding: 100px 16px 36px;
   overflow: hidden;
 }
 
 .ps-header {
-  text-align: center;
-  margin-bottom: 22px;
+  width: 100%;
+  margin-bottom: 30px;
+}
+
+.ps-header-main {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  width: min(960px, 94vw);
+  margin: 0 auto;
+  gap: 20px;
+}
+
+.ps-header-left {
+  text-align: left;
   max-width: 560px;
 }
 
@@ -2256,7 +2266,7 @@ a, button, [role="button"], select, input {
   font-family: var(--font-heading);
   font-size: clamp(1.85rem, 4vw, 2.6rem);
   font-weight: 800;
-  margin: 10px 0 6px;
+  margin: 8px 0 4px;
   letter-spacing: -0.03em;
   background: linear-gradient(135deg, #ffffff 30%, var(--brand-color) 100%);
   -webkit-background-clip: text;
@@ -2267,19 +2277,58 @@ a, button, [role="button"], select, input {
 
 .ps-sub {
   color: var(--text-secondary);
-  font-size: 0.9rem;
+  font-size: 0.92rem;
   margin: 0;
+  line-height: 1.45;
 }
 
-/* Stage holds the deck + nav arrows */
+/* Tabs switcher pill */
+.ps-tabs-container {
+  display: flex;
+  gap: 4px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  padding: 4px;
+  border-radius: 999px;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.ps-tab-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 0.84rem;
+  padding: 8px 16px;
+  border-radius: 999px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.ps-tab-btn.is-active {
+  background: var(--brand-color);
+  color: #060913;
+  box-shadow: 0 4px 15px -3px rgba(230, 167, 41, 0.45);
+}
+
+.ps-tab-btn:hover:not(.is-active) {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+/* Tinder Stage Centering */
 .ps-stage {
   position: relative;
-  width: min(960px, 94vw);
-  height: 540px;
-  margin: 0 auto;
-  border-radius: 26px;
+  width: min(440px, 94vw);
+  height: 560px;
+  margin: 20px auto 70px;
   overflow: visible;
-  touch-action: pan-y;
+  touch-action: none;
 }
 
 .ps-deck {
@@ -2288,90 +2337,76 @@ a, button, [role="button"], select, input {
   border-radius: 26px;
 }
 
-.ps-item {
+/* Overlapping Tinder Card Layer */
+.ps-item-tinder {
   position: absolute;
-  width: 200px;
-  height: 280px;
-  top: 50%;
-  transform: translate(0, -50%);
-  border-radius: 18px;
-  background-position: 50% 50%;
-  background-size: cover;
-  background-repeat: no-repeat;
-  box-shadow: 0 26px 50px -10px rgba(0, 0, 0, 0.6),
-              0 0 0 1px rgba(255, 255, 255, 0.05) inset;
-  transition:
-    left 0.6s cubic-bezier(0.22, 1, 0.36, 1),
-    top 0.6s cubic-bezier(0.22, 1, 0.36, 1),
-    width 0.6s cubic-bezier(0.22, 1, 0.36, 1),
-    height 0.6s cubic-bezier(0.22, 1, 0.36, 1),
-    border-radius 0.6s cubic-bezier(0.22, 1, 0.36, 1),
-    transform 0.6s cubic-bezier(0.22, 1, 0.36, 1),
-    opacity 0.4s ease;
-  will-change: transform, left, width;
-}
-
-/* First two children stack at left:0 full-bleed. Child 2 sits on top
-   (later in DOM) and is the "active" card whose content shows. */
-.ps-deck .ps-item:nth-child(1),
-.ps-deck .ps-item:nth-child(2) {
-  top: 0;
-  left: 0;
   width: 100%;
   height: 100%;
   border-radius: 26px;
-  transform: translate(0, 0);
+  background-position: 50% 50%;
+  background-size: cover;
+  background-repeat: no-repeat;
+  box-shadow: 0 26px 54px -16px rgba(0, 0, 0, 0.78),
+              0 0 0 1px rgba(255, 255, 255, 0.06) inset;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  overflow: hidden;
+  touch-action: none;
+  transform-origin: bottom center;
 }
 
-.ps-deck .ps-item:nth-child(3) {
-  left: calc(100% - 460px);
-}
-.ps-deck .ps-item:nth-child(4) {
-  left: calc(100% - 240px);
-}
-.ps-deck .ps-item:nth-child(5) {
-  left: calc(100% - 20px);
-  opacity: 0.55;
-}
-.ps-deck .ps-item:nth-child(n+6) {
-  left: 100%;
-  opacity: 0;
-  pointer-events: none;
+.ps-item-tinder.is-active-card {
+  cursor: grab;
 }
 
-/* Card content (only revealed on the active 2nd child) */
+.ps-item-tinder.is-active-card:active {
+  cursor: grabbing;
+}
+
+/* Card content layout */
 .ps-content {
   position: absolute;
-  bottom: 36px;
-  left: 36px;
-  right: 36px;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 36px 26px 30px;
+  background: linear-gradient(180deg, 
+    transparent 0%, 
+    rgba(6, 9, 19, 0.7) 15%,
+    rgba(6, 9, 19, 0.95) 45%, 
+    #060919 100%
+  );
+  border-bottom-left-radius: 26px;
+  border-bottom-right-radius: 26px;
   text-align: left;
   color: #fff;
-  display: none;
 }
 
-.ps-deck .ps-item:nth-child(2) .ps-content {
-  display: block;
+.ps-meta-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
 }
 
 .ps-chip {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
   padding: 4px 10px;
-  background: rgba(255, 255, 255, 0.10);
-  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
   border-radius: 999px;
   font-size: 0.72rem;
   color: #fff;
-  margin-bottom: 12px;
-  opacity: 0;
-  animation: ps-rise 0.7s ease-out 0.05s 1 forwards;
+  font-weight: 600;
 }
 
 .ps-chip-warn {
-  background: rgba(245, 158, 11, 0.18);
-  border-color: rgba(245, 158, 11, 0.4);
+  background: rgba(245, 158, 11, 0.16);
+  border-color: rgba(245, 158, 11, 0.35);
   color: #fbbf24;
 }
 
@@ -2380,53 +2415,72 @@ a, button, [role="button"], select, input {
   font-size: 0.7rem;
 }
 
+.ps-badge-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 999px;
+  font-size: 0.72rem;
+  color: rgba(255, 255, 255, 0.75);
+  font-weight: 500;
+}
+
 .ps-name {
   font-family: var(--font-heading);
-  font-size: clamp(2.2rem, 5.5vw, 3.8rem);
+  font-size: clamp(1.85rem, 5vw, 2.5rem);
   font-weight: 800;
-  line-height: 0.98;
-  margin: 0 0 8px;
-  letter-spacing: -0.035em;
+  line-height: 1.05;
+  margin: 0 0 6px;
+  letter-spacing: -0.03em;
   text-transform: uppercase;
-  text-shadow: 0 4px 24px rgba(0, 0, 0, 0.55);
-  opacity: 0;
-  animation: ps-rise 0.75s cubic-bezier(0.22, 1, 0.36, 1) 0.15s 1 forwards;
+  text-shadow: 0 4px 20px rgba(0, 0, 0, 0.45);
 }
 
 .ps-desc {
   font-family: var(--font-body);
-  font-size: 1rem;
-  line-height: 1.5;
-  color: rgba(255, 255, 255, 0.9);
-  margin: 0 0 22px;
-  max-width: 460px;
-  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
-  opacity: 0;
-  animation: ps-rise 0.75s cubic-bezier(0.22, 1, 0.36, 1) 0.3s 1 forwards;
+  font-size: 0.95rem;
+  line-height: 1.4;
+  color: rgba(255, 255, 255, 0.85);
+  margin: 0 0 10px;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+  font-weight: 500;
+}
+
+.ps-long-desc {
+  font-family: var(--font-body);
+  font-size: 0.84rem;
+  line-height: 1.45;
+  color: rgba(255, 255, 255, 0.65);
+  margin: 0 0 20px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .ps-cta {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 12px 22px;
+  padding: 11px 22px;
   background: linear-gradient(135deg, var(--brand-color), #ff8a5b);
   color: #060913;
   border: none;
   border-radius: 999px;
   font-family: var(--font-heading);
   font-weight: 700;
-  font-size: 0.96rem;
+  font-size: 0.92rem;
   cursor: pointer;
-  box-shadow: 0 14px 32px -10px rgba(230, 167, 41, 0.6);
-  opacity: 0;
-  animation: ps-rise 0.75s cubic-bezier(0.22, 1, 0.36, 1) 0.45s 1 forwards;
+  box-shadow: 0 10px 24px -8px rgba(230, 167, 41, 0.55);
   transition: transform 0.2s ease, box-shadow 0.25s ease;
 }
 
 .ps-cta:hover {
   transform: translateY(-2px);
-  box-shadow: 0 18px 40px -10px rgba(230, 167, 41, 0.75);
+  box-shadow: 0 14px 30px -8px rgba(230, 167, 41, 0.7);
 }
 
 .ps-cta i {
@@ -2438,39 +2492,29 @@ a, button, [role="button"], select, input {
   transform: translateX(3px);
 }
 
-@keyframes ps-rise {
-  from {
-    opacity: 0;
-    transform: translateY(30px);
-    filter: blur(14px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-    filter: blur(0);
-  }
-}
-
-/* Nav arrows — bottom-right of the stage */
+/* Floating Tinder Navigation Controls below deck */
 .ps-nav {
   position: absolute;
-  bottom: 22px;
-  right: 22px;
+  bottom: -60px;
+  left: 50%;
+  transform: translateX(-50%);
   display: flex;
-  gap: 10px;
+  align-items: center;
+  gap: 18px;
   z-index: 10;
+  width: max-content;
 }
 
 .ps-btn {
-  width: 46px;
-  height: 42px;
+  width: 44px;
+  height: 40px;
   border-radius: 12px;
-  border: 1.5px solid rgba(255, 255, 255, 0.32);
-  background: rgba(255, 255, 255, 0.10);
+  border: 1.5px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.06);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   color: #fff;
-  font-size: 0.95rem;
+  font-size: 0.85rem;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
@@ -2479,8 +2523,8 @@ a, button, [role="button"], select, input {
 }
 
 .ps-btn:hover {
-  background: rgba(255, 255, 255, 0.20);
-  border-color: rgba(255, 255, 255, 0.55);
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.4);
   transform: scale(1.05);
 }
 
@@ -2488,19 +2532,18 @@ a, button, [role="button"], select, input {
   transform: scale(0.95);
 }
 
-/* Counter */
-.ps-counter {
-  margin-top: 22px;
+.ps-nav-info {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  padding: 6px 16px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid var(--glass-border);
+  gap: 5px;
+  padding: 6px 14px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.06);
   border-radius: 999px;
   color: var(--text-secondary);
   font-family: var(--font-mono);
-  font-size: 0.82rem;
+  font-size: 0.8rem;
+  letter-spacing: 0.05em;
 }
 
 .ps-counter-cur {
@@ -2509,10 +2552,72 @@ a, button, [role="button"], select, input {
 }
 
 .ps-counter-sep {
-  opacity: 0.5;
+  opacity: 0.4;
   font-size: 0.74rem;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
+}
+
+/* WhatsApp support buttons inside navbar */
+.navbar-whatsapp-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: rgba(37, 211, 102, 0.1);
+  border: 1px solid rgba(37, 211, 102, 0.22);
+  border-radius: 999px;
+  color: #25d366;
+  text-decoration: none;
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 0.82rem;
+  transition: all 0.22s ease;
+  margin-right: 8px;
+}
+
+.navbar-whatsapp-btn:hover {
+  background: rgba(37, 211, 102, 0.18);
+  border-color: rgba(37, 211, 102, 0.4);
+  transform: translateY(-1px);
+}
+
+.navbar-whatsapp-number {
+  font-family: var(--font-mono);
+  font-weight: 600;
+}
+
+/* Mobile Drawer WhatsApp Box */
+.drawer-whatsapp-box {
+  padding: 14px 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  margin-bottom: 8px;
+}
+
+.drawer-whatsapp-link {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 11px 15px;
+  background: rgba(37, 211, 102, 0.09);
+  border: 1px solid rgba(37, 211, 102, 0.18);
+  border-radius: 12px;
+  color: #25d366;
+  text-decoration: none;
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 0.88rem;
+  transition: all 0.2s ease;
+}
+
+.drawer-whatsapp-link:active {
+  background: rgba(37, 211, 102, 0.16);
+  transform: scale(0.98);
+}
+
+.drawer-whatsapp-num {
+  font-size: 0.78rem;
+  color: rgba(255, 255, 255, 0.5);
+  font-family: var(--font-mono);
+  font-weight: 500;
 }
 
 /* Bottom sheet */
@@ -2810,9 +2915,25 @@ a, button, [role="button"], select, input {
     padding: 88px 12px 28px;
   }
 
-  .ps-stage {
+  .ps-header-main {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 16px;
+  }
+
+  .ps-tabs-container {
     width: 100%;
-    height: 560px;
+  }
+
+  .ps-tab-btn {
+    flex: 1;
+    justify-content: center;
+  }
+
+  .ps-stage {
+    width: min(380px, 94vw);
+    height: 500px;
+    margin: 10px auto 80px;
     border-radius: 22px;
   }
 
@@ -2820,44 +2941,30 @@ a, button, [role="button"], select, input {
     border-radius: 22px;
   }
 
-  /* Peek cards become smaller so 1-2 fit on the right edge */
-  .ps-item {
-    width: 110px;
-    height: 160px;
-    border-radius: 14px;
-  }
-
-  .ps-deck .ps-item:nth-child(1),
-  .ps-deck .ps-item:nth-child(2) {
+  .ps-item-tinder {
     border-radius: 22px;
   }
 
-  .ps-deck .ps-item:nth-child(3) {
-    left: calc(100% - 240px);
-  }
-  .ps-deck .ps-item:nth-child(4) {
-    left: calc(100% - 120px);
-    opacity: 0.7;
-  }
-  .ps-deck .ps-item:nth-child(n+5) {
-    left: 100%;
-    opacity: 0;
-    pointer-events: none;
-  }
-
   .ps-content {
-    bottom: 96px;
-    left: 22px;
-    right: 22px;
+    padding: 24px 20px 20px;
+    border-bottom-left-radius: 22px;
+    border-bottom-right-radius: 22px;
   }
 
   .ps-name {
-    font-size: 2.1rem;
+    font-size: 1.8rem;
+    margin-bottom: 4px;
   }
 
   .ps-desc {
-    font-size: 0.92rem;
-    margin-bottom: 16px;
+    font-size: 0.88rem;
+    margin-bottom: 12px;
+  }
+
+  .ps-long-desc {
+    font-size: 0.78rem;
+    margin-bottom: 14px;
+    -webkit-line-clamp: 2;
   }
 
   .ps-cta {
@@ -2866,13 +2973,24 @@ a, button, [role="button"], select, input {
   }
 
   .ps-nav {
-    bottom: 16px;
-    right: 16px;
+    bottom: -60px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    gap: 16px;
   }
 
   .ps-btn {
-    width: 44px;
-    height: 40px;
+    width: 40px;
+    height: 36px;
+    border-radius: 10px;
+    font-size: 0.8rem;
+  }
+
+  .ps-nav-info {
+    padding: 4px 10px;
+    font-size: 0.75rem;
   }
 
   .sw-pkg {
@@ -2880,36 +2998,35 @@ a, button, [role="button"], select, input {
   }
 }
 
-/* On the smallest phones, only one peek card */
+/* On the smallest phones, scale down deck further and hide long description */
 @media (max-width: 420px) {
-  .ps-item {
-    width: 92px;
-    height: 138px;
-  }
-
-  .ps-deck .ps-item:nth-child(3) {
-    left: calc(100% - 110px);
-    opacity: 0.7;
-  }
-
-  .ps-deck .ps-item:nth-child(n+4) {
-    left: 100%;
-    opacity: 0;
-    pointer-events: none;
+  .ps-stage {
+    width: min(330px, 94vw);
+    height: 430px;
+    margin: 10px auto 70px;
   }
 
   .ps-content {
-    bottom: 92px;
-    left: 18px;
-    right: 18px;
+    padding: 20px 16px 16px;
   }
 
   .ps-name {
-    font-size: 1.85rem;
+    font-size: 1.45rem;
+    margin-bottom: 2px;
   }
 
   .ps-desc {
-    font-size: 0.88rem;
+    font-size: 0.82rem;
+    margin-bottom: 8px;
+  }
+
+  .ps-long-desc {
+    display: none; /* Hide block-text to prevent scroll overflow on very short devices */
+  }
+
+  .ps-cta {
+    padding: 9px 16px;
+    font-size: 0.84rem;
   }
 }
 

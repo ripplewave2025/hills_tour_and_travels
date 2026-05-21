@@ -52,10 +52,10 @@ export const Booking = {
     this.toSearch = new SearchBar("booking-to-input", "booking-to-dropdown", "to");
 
     return `
-      <section class="section-padding" style="min-height: 85vh; display: flex; align-items: center;">
+      <section class="section-padding booking-section">
         <div class="container">
           <!-- Step Indicator Bar -->
-          <div class="booking-steps-nav flex-between">
+          <div class="booking-steps-nav">
             <div class="step-nav-item active" id="step-nav-1" data-step="1">
               <span class="step-nav-circle">1</span>
               <span class="step-nav-text">Route Details</span>
@@ -78,15 +78,15 @@ export const Booking = {
           </div>
 
           <!-- Wizard Container -->
-          <div class="booking-wizard-wrapper grid" style="grid-template-columns: 1.8fr 1.2fr; gap: 32px; margin-top: 40px;">
-            
+          <div class="booking-wizard-wrapper">
+
             <!-- Left Panel: Active Step Content -->
-            <div class="booking-left-content glass-panel" id="booking-step-panel" style="padding: 40px;">
+            <div class="booking-left-content glass-panel" id="booking-step-panel">
               <!-- Dynamic Steps will inject here -->
             </div>
 
             <!-- Right Panel: Trip Summary Card -->
-            <div class="booking-right-summary glass-panel" id="booking-summary-panel" style="padding: 32px; height: max-content;">
+            <div class="booking-right-summary glass-panel" id="booking-summary-panel">
               <!-- Dynamic Price Summary will inject here -->
             </div>
 

@@ -19,6 +19,7 @@ create table if not exists public.bookings (
   created_at   timestamptz not null default now()
 );
 
+
 -- Index for admin dashboard queries (most recent first)
 create index if not exists bookings_created_at_idx on public.bookings (created_at desc);
 

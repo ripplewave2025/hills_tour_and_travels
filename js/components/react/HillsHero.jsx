@@ -10,7 +10,13 @@
 
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import heroImg from '../../../images/Hero_images_for_mobile/Tiger_hill_hero_mobile_1.png';
+
+// Import three cinematic mountain hero images
+import heroImg1 from '../../../images/Hero_images_for_mobile/Tiger_hill_hero_mobile_1.png';
+import heroImg2 from '../../../images/Hero_images_for_mobile/Tiger_hill_hero_mobile.png';
+import heroImg3 from '../../../images/Hero_images_for_mobile/Darjeeling_nigh_hero_mobile.png';
+
+const HERO_IMAGES = [heroImg1, heroImg2, heroImg3];
 
 const T = {
   en: {
@@ -73,6 +79,7 @@ function readLang() {
 
 export function HillsHero() {
   const [wordIdx, setWordIdx] = useState(0);
+  const [imgIdx, setImgIdx] = useState(0);
   const [lang, setLang] = useState(readLang);
   const t = T[lang] || T.en;
 
@@ -94,20 +101,35 @@ export function HillsHero() {
     return () => clearInterval(id);
   }, []);
 
+  // Cycle the background hero images every 6 seconds
+  useEffect(() => {
+    const id = setInterval(() => {
+      setImgIdx((i) => (i + 1) % HERO_IMAGES.length);
+    }, 6000);
+    return () => clearInterval(id);
+  }, []);
+
   return (
     <section className="hh-hero" aria-label="Hills Tour & Travels — Eastern Himalayan journeys">
-      {/* Background image */}
+      {/* Background image cross-fade slider */}
       <div className="hh-hero-bg" aria-hidden="true">
-        <motion.img
-          src={heroImg}
-          alt=""
-          className="hh-hero-bg-img"
-          initial={{ scale: 1.04 }}
-          animate={{ scale: 1.1 }}
-          transition={{ duration: 14, ease: 'linear', repeat: Infinity, repeatType: 'reverse' }}
-          loading="eager"
-          fetchpriority="high"
-        />
+        <AnimatePresence initial={false}>
+          <motion.img
+            key={imgIdx}
+            src={HERO_IMAGES[imgIdx]}
+            alt=""
+            className="hh-hero-bg-img"
+            initial={{ opacity: 0, scale: 1.04 }}
+            animate={{ opacity: 1, scale: 1.1 }}
+            exit={{ opacity: 0 }}
+            transition={{
+              opacity: { duration: 1.6, ease: 'easeInOut' },
+              scale: { duration: 15, ease: 'linear' }
+            }}
+            loading="eager"
+            fetchpriority="high"
+          />
+        </AnimatePresence>
         <div className="hh-hero-gradient" />
       </div>
 
