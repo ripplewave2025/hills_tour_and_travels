@@ -1,148 +1,107 @@
 /* ==========================================
    HILLS TOUR & TRAVELS — SIGHTSEEING PACKAGES
+   ==========================================
+   Every package carries a `category` duration tier so the UI can group
+   them cleanly for travellers:
+     'one-time'  — a single quick experience (2–4 hrs)
+     'half-day'  — a morning or afternoon circuit (4–6 hrs)
+     'full-day'  — a complete day out (7–9 hrs)
+     'two-day'   — an overnight escape (1 night)
+     'multi-day' — a dedicated expedition (2+ nights)
+   Prices are starting fares (whole vehicle, not per head); SUV fares apply
+   where hatchback/sedan entry is restricted. Benchmarked against 2026
+   government taxi charts — see claude_research.md.
    ========================================== */
 
+export const CATEGORY_LABELS = {
+  'one-time': 'One-Time Quick Trip',
+  'half-day': 'Half-Day Tour',
+  'full-day': 'Full-Day Tour',
+  'two-day': '2-Day Escape',
+  'multi-day': 'Multi-Day Expedition'
+};
+
+// Order in which duration tiers are shown in the packages sheet
+export const CATEGORY_ORDER = ['one-time', 'half-day', 'full-day', 'two-day', 'multi-day'];
+
 export const packages = [
-  /* --- Mirik Lake & Bokar Monastery --- */
+  /* ===================== DARJEELING ===================== */
   {
-    id: "mirik-lake-bokar",
-    destinationId: "mirik",
-    name: "Mirik Lake & Bokar Monastery Day",
-    duration: "Full Day (8 Hours)",
-    priceSedan: 2400,
-    priceSuv: 3400,
+    id: "darjeeling-tiger-hill",
+    destinationId: "darjeeling",
+    name: "Tiger Hill Golden Sunrise",
+    category: "one-time",
+    duration: "Early Morning · 4–5 hrs",
+    priceSedan: 1400,
+    priceSuv: 2250,
     attractions: [
-      "Sumendu Lake & Arch Footbridge (Boating)",
-      "Bokar Monastery (Hilltop Meditation Center)",
-      "Tingling View Point (Tea Garden Panorama)",
-      "Mirik Pine Tree Trails",
-      "Pashupati Market (Nepal Border — optional)"
+      "Tiger Hill Sunrise over Kanchenjunga",
+      "Ghoom Monastery (Yiga Choeling)",
+      "Batasia Loop & War Memorial"
     ],
-    description: "Spend the day at tranquil Sumendu Lake — boating, the arching footbridge, and pine-shaded trails. Climb to Bokar Monastery for meditation views directly over the lake, then take in sweeping tea-garden vistas at Tingling View Point.",
+    description: "The closest sunrise you'll ever see — golden first light on Kanchenjunga, then the 1850s Ghoom Monastery and the famous toy-train loop on the way back.",
     suvOnly: false,
-    restrictions: ["Indian identity card required if continuing across the buffer to Pashupati Market."]
+    restrictions: ["Strict 3:45 AM dispatch. Tiger Hill entry coupons booked in advance."]
   },
-
-  /* --- Teesta River Adventure --- */
   {
-    id: "teesta-river-adventure",
-    destinationId: "teesta",
-    name: "Teesta River Adventure & Rafting",
-    duration: "Full Day (8 Hours)",
-    priceSedan: 2600,
-    priceSuv: 3600,
+    id: "darjeeling-ropeway-ride",
+    destinationId: "darjeeling",
+    name: "Darjeeling Ropeway & Tea Garden",
+    category: "one-time",
+    duration: "2.5–3 hrs",
+    priceSedan: 1200,
+    priceSuv: 1900,
     attractions: [
-      "Lovers Meet View Point (Rangeet–Teesta Confluence)",
-      "Triveni Camping Ground & Sangam",
-      "Teesta White-Water Rafting (Class II–III)",
-      "Coronation Bridge",
-      "Sevoke Viewpoint"
+      "Darjeeling Ropeway (Rangeet Valley cable car)",
+      "Happy Valley Tea Estate (Est. 1854)"
     ],
-    description: "Stand on the highway and look down at the bird's-eye confluence of the Rangeet and Teesta rivers, then descend to the white sand at Triveni for a riverside bonfire or an overnight stay. White-water rafting routes carve through the deep gorges of the valley.",
+    description: "A short, scenic outing: glide over the Rangeet Valley tea estates by cable car, then walk the slopes of Darjeeling's most accessible tea garden.",
     suvOnly: false,
-    restrictions: ["Rafting is river-level dependent — operators may cancel during heavy monsoon flows for safety."]
+    restrictions: ["Ropeway closes in high winds; timings vary by season."]
   },
-
-  /* --- Darjeeling Toy Train + Happy Valley --- */
+  {
+    id: "darjeeling-5-point",
+    destinationId: "darjeeling",
+    name: "Darjeeling Spiritual 5-Point",
+    category: "half-day",
+    duration: "3–4 hrs",
+    priceSedan: 1400,
+    priceSuv: 2500,
+    attractions: [
+      "Japanese Peace Pagoda",
+      "Dali (Druk Sangak Choling) Monastery",
+      "Tibet Museum",
+      "Dhirdham Temple",
+      "Chowrasta / The Mall"
+    ],
+    description: "An easy, low-pace tour of Darjeeling's calmest spots — Tibetan Buddhist temples, the white Peace Pagoda, and the town's lively Mall.",
+    suvOnly: false,
+    restrictions: []
+  },
   {
     id: "darjeeling-toy-train-tea",
     destinationId: "darjeeling",
-    name: "Toy Train Joyride & Happy Valley Tea Tour",
-    duration: "5 Hours (Half Day)",
+    name: "Toy Train Joyride & Happy Valley Tea",
+    category: "half-day",
+    duration: "5 hrs",
     priceSedan: 2000,
     priceSuv: 2900,
     attractions: [
       "Darjeeling Himalayan Railway Toy Train Joyride",
       "Ghoom Station & DHR Museum",
       "Batasia Loop & War Memorial",
-      "Happy Valley Tea Estate (Est. 1854)",
-      "Chowrasta / The Mall (free time)"
+      "Happy Valley Tea Estate"
     ],
-    description: "Ride the UNESCO World Heritage 'Toy Train' through the loop at Batasia, then walk the green slopes of Happy Valley — the most accessible tea garden from town, in continuous operation since 1854 — and wrap up at Chowrasta for chai and people-watching.",
+    description: "Ride the UNESCO World Heritage 'Toy Train' through the Batasia loop, then walk the green slopes of the 1854 Happy Valley tea garden.",
     suvOnly: false,
-    restrictions: ["Toy Train joyride tickets sell out fast in season — book at least 24 hours in advance through us."]
-  },
-
-  /* --- Lamahatta · Takdah · Tinchuley Loop --- */
-  {
-    id: "lamahatta-takdah-tinchuley",
-    destinationId: "lamahatta-takdah",
-    name: "Lamahatta · Takdah · Tinchuley Loop",
-    duration: "5–6 Hours (Half Day)",
-    priceSedan: 2200,
-    priceSuv: 3200,
-    attractions: [
-      "Lamahatta Eco Park",
-      "Takdah Orchid Center",
-      "British Heritage Bungalows",
-      "Tinchuley Viewpoint",
-      "Peshok Tea Garden",
-      "Gumbadara Viewpoint"
-    ],
-    description: "A scenic loop through misty pine forests at Lamahatta Eco Park, colonial-era heritage bungalows and orchid greenhouses at Takdah, ending at the offbeat Tinchuley viewpoint for unobstructed Kanchenjunga panoramas.",
-    suvOnly: false,
-    restrictions: []
-  },
-  /* --- Darjeeling Sightseeing --- */
-  {
-    id: "darjeeling-5-point",
-    destinationId: "darjeeling",
-    name: "Classic 5-Point Excursion",
-    duration: "3 Hours (Half Day)",
-    priceSedan: 1400,
-    priceSuv: 2500,
-    attractions: [
-      "Japanese Temple",
-      "Peace Pagoda",
-      "Druk Choeling Monastery",
-      "Tibet Museum",
-      "Dhirdham Temple"
-    ],
-    description: "An elegant, low-pace spiritual tour covering colonial-era landmarks, Tibetan Buddhist architecture, and the serene Peace Pagoda offering panoramic views of Darjeeling town.",
-    suvOnly: false,
-    restrictions: []
-  },
-  {
-    id: "darjeeling-7-point",
-    destinationId: "darjeeling",
-    name: "Darjeeling Heritage 7-Point Tour",
-    duration: "4.5 Hours (Half Day)",
-    priceSedan: 1800,
-    priceSuv: 2700,
-    attractions: [
-      "Rangeet Valley Tea Garden",
-      "Himalayan Mountaineering Institute (HMI)",
-      "Padmaja Naidu Himalayan Zoo",
-      "Darjeeling Ropeway",
-      "Tenzing & Gombu Rocks",
-      "Tibetan Refugee Self-Help Centre",
-      "Lebong Race Course View"
-    ],
-    description: "Our most popular sightseeing package covering tea garden tasting, high-altitude wildlife (Red Pandas/Snow Leopards), historical mountaineering exhibits, and breathtaking cable car rides.",
-    suvOnly: false,
-    restrictions: []
-  },
-  {
-    id: "darjeeling-tiger-hill",
-    destinationId: "darjeeling",
-    name: "Tiger Hill Golden Sunrise Tour",
-    duration: "5 Hours (4:00 AM – 9:00 AM)",
-    priceSedan: 1400,
-    priceSuv: 2250,
-    attractions: [
-      "Tiger Hill Sunrise View (Mt. Kanchenjunga)",
-      "Yiga Choeling Ghoom Monastery",
-      "Batasia Loop & War Memorial"
-    ],
-    description: "Experience the world-famous golden sunrise illuminating Kanchenjunga and Mount Everest. Followed by a visit to the historic 1850s Ghoom Monastery and the loop engineering marvel.",
-    suvOnly: false,
-    restrictions: ["Requires early-morning start (strict 3:45 AM dispatch). Tiger Hill entry coupons must be booked in advance."]
+    restrictions: ["Toy Train tickets sell out fast in season — book at least 24 hours ahead."]
   },
   {
     id: "darjeeling-rock-garden",
     destinationId: "darjeeling",
-    name: "Rock Garden & Ganga Maya Adventure",
-    duration: "4 Hours",
+    name: "Rock Garden & Ganga Maya Park",
+    category: "half-day",
+    duration: "4 hrs",
     priceSedan: 1800,
     priceSuv: 2700,
     attractions: [
@@ -150,15 +109,36 @@ export const packages = [
       "Ganga Maya Park",
       "Chunnu Summer Falls"
     ],
-    description: "A steep, winding, scenic descent through lush forests to a multi-tiered rock garden carved around a mountain waterfall, featuring terraced seating and flowering gardens.",
+    description: "A winding descent through forest to a multi-tiered garden carved around a mountain waterfall, with terraced seating and flowering beds.",
     suvOnly: false,
-    restrictions: ["Steep hair-pin curves. High-clearance vehicles recommended."]
+    restrictions: ["Steep hairpin curves; high-clearance vehicles recommended."]
+  },
+  {
+    id: "darjeeling-7-point",
+    destinationId: "darjeeling",
+    name: "Darjeeling Signature Full-Day",
+    category: "full-day",
+    duration: "Full Day · 7–8 hrs",
+    priceSedan: 2600,
+    priceSuv: 3600,
+    attractions: [
+      "Tiger Hill Sunrise (optional early start)",
+      "Padmaja Naidu Himalayan Zoo (Red Panda, Snow Leopard)",
+      "Himalayan Mountaineering Institute (HMI)",
+      "Darjeeling Ropeway",
+      "Tibetan Refugee Self-Help Centre",
+      "Tea garden tasting + Chowrasta"
+    ],
+    description: "Our most complete Darjeeling day — high-altitude wildlife, mountaineering history, the cable car, tea tasting and the Mall, all in one well-paced loop.",
+    suvOnly: false,
+    restrictions: []
   },
   {
     id: "darjeeling-mirik-excursion",
     destinationId: "darjeeling",
-    name: "Mirik Lake & Nepal Border Borderlands",
-    duration: "Full Day (8 Hours)",
+    name: "Darjeeling → Mirik & Nepal Border",
+    category: "full-day",
+    duration: "Full Day · 8 hrs",
     priceSedan: 3000,
     priceSuv: 4200,
     attractions: [
@@ -167,197 +147,370 @@ export const packages = [
       "Simana View Point",
       "Gopaldhara Tea Estate"
     ],
-    description: "Traverse high mountain ridges along the international border with Nepal. Walk along the lakeside forest in Mirik and shop for authentic electronic/woolen wares in Pashupati Market.",
+    description: "Ride the ridgeline along the Nepal border, boat on Mirik's Sumendu Lake, and shop the Pashupati border market.",
     suvOnly: false,
-    restrictions: ["Indian identity cards required to cross the border buffer zones to Pashupati Market."]
+    restrictions: ["Indian ID card needed to cross the border buffer to Pashupati Market."]
+  },
+  {
+    id: "darjeeling-mirik-2day",
+    destinationId: "darjeeling",
+    name: "Darjeeling + Mirik 2-Day Escape",
+    category: "two-day",
+    duration: "2 Days / 1 Night",
+    priceSedan: 6500,
+    priceSuv: 8500,
+    attractions: [
+      "Day 1 — Tiger Hill sunrise, Ghoom, Batasia, Darjeeling sightseeing",
+      "Overnight in Darjeeling",
+      "Day 2 — Mirik Lake, tea gardens & Simana on the way down"
+    ],
+    description: "The relaxed way to see the best of the hills: a full Darjeeling day, a night in town, and a scenic Mirik run on the way back to the plains.",
+    suvOnly: false,
+    restrictions: ["Hotel billed separately — we can arrange partner stays on request."]
   },
 
-  /* --- Gangtok Sightseeing --- */
+  /* ===================== GANGTOK / SIKKIM ===================== */
   {
     id: "gangtok-local-explorer",
     destinationId: "gangtok",
-    name: "Gangtok Signature 10-Point Explorer",
-    duration: "Full Day (8 Hours)",
+    name: "Gangtok Signature 10-Point",
+    category: "full-day",
+    duration: "Full Day · 8 hrs",
     priceSedan: 2800,
-    priceSuv: 4500,
+    priceSuv: 4000,
     attractions: [
-      "Tashi Viewpoint",
-      "Ganesh Tok",
-      "Hanuman Tok",
-      "Do Drul Chorten Stupa",
-      "Namgyal Institute of Tibetology",
-      "Flower Exhibition Center",
-      "Enchey Monastery",
-      "Banjhakri Waterfalls",
-      "Lhasa Falls",
-      "Ranka Monastery"
+      "Tashi Viewpoint", "Ganesh Tok", "Hanuman Tok",
+      "Do Drul Chorten Stupa", "Namgyal Institute of Tibetology",
+      "Flower Exhibition Centre", "Enchey Monastery",
+      "Banjhakri Waterfalls", "Ranka Monastery", "MG Marg"
     ],
-    description: "A comprehensive sightseeing module exploring Buddhist heritage, cultural museums, floral exhibitions, and high altitude panoramic vistas of Gangtok.",
+    description: "The complete Gangtok city day — Buddhist monasteries, viewpoints, museums and waterfalls, ending at the vehicle-free MG Marg promenade.",
     suvOnly: false,
-    restrictions: []
+    restrictions: ["Sightseeing inside Sikkim uses a local Sikkim-registered vehicle."]
   },
   {
     id: "gangtok-tsomgo-circuit",
     destinationId: "gangtok",
-    name: "Tsomgo Lake & Baba Mandir Excursion",
-    duration: "Full Day (7:30 AM – 3:30 PM)",
-    priceSedan: null, // Banned by regulation
+    name: "Tsomgo Lake & Baba Mandir",
+    category: "full-day",
+    duration: "Full Day · 7:30 AM – 3:30 PM",
+    priceSedan: null,
     priceSuv: 4800,
     attractions: [
-      "Tsomgo (Changu) Glacier Lake (12,310 ft)",
-      "New Baba Harbhajan Singh Mandir",
-      "Mandakini Waterfalls"
+      "Tsomgo (Changu) Glacier Lake — 12,310 ft",
+      "Baba Harbhajan Singh Mandir",
+      "Yak rides & Mandakini Falls"
     ],
-    description: "Ascend to the breathtaking, high-altitude alpine lake sacred to the local people. Pay respects at the unique memorial shrine of Baba Harbhajan Singh.",
+    description: "Climb to the sacred high-altitude glacial lake that changes colour with the seasons, and the unique memorial shrine of Baba Harbhajan Singh.",
     suvOnly: true,
     restrictions: [
-      "Protected Area Permit (PAP) mandatory.",
-      "Strictly SUV-only (hatchbacks/sedans are legally barred).",
-      "Aadhaar cards and PAN cards are NOT legally accepted for permit processing; only Voter ID, Passport, or DL are allowed."
+      "Protected Area Permit (PAP) mandatory; arranged by us.",
+      "SUV-only — hatchbacks/sedans are legally barred.",
+      "Permits need Voter ID, Passport or DL (Aadhaar/PAN not accepted)."
     ]
   },
   {
     id: "gangtok-nathula-pass",
     destinationId: "gangtok",
-    name: "Nathula Pass Indo-China Border Extension",
-    duration: "Full Day (7:00 AM – 4:00 PM)",
+    name: "Nathula Pass Indo-China Border",
+    category: "full-day",
+    duration: "Full Day · 7:00 AM – 4:00 PM",
     priceSedan: null,
     priceSuv: 6800,
     attractions: [
-      "Nathula Pass Indo-China Border Gate (14,140 ft)",
+      "Nathula Pass Border Gate — 14,140 ft",
       "Tsomgo Glacier Lake",
       "Baba Harbhajan Singh Mandir"
     ],
-    description: "An ultimate high-altitude pilgrimage to the historic Silk Road mountain pass separating India and Tibet Autonomous Region, China.",
+    description: "A high-altitude journey to the historic Silk Road pass on the India–China border, combined with Tsomgo Lake and Baba Mandir.",
     suvOnly: true,
     restrictions: [
-      "Protected Area Permit (PAP) mandatory with early application (1 day in advance).",
-      "Strictly restricted to Indian nationals only.",
-      "Nathula is completely closed on Mondays and Tuesdays. Documents must be submitted by 10:00 AM at the check-post."
+      "PAP mandatory, applied 1 day in advance.",
+      "Indian nationals only — foreigners not permitted.",
+      "Closed Mondays & Tuesdays; documents in by 10:00 AM."
     ]
+  },
+  {
+    id: "gangtok-tsomgo-2day",
+    destinationId: "gangtok",
+    name: "Gangtok + Tsomgo 2-Day Starter",
+    category: "two-day",
+    duration: "2 Days / 1 Night",
+    priceSedan: null,
+    priceSuv: 9500,
+    attractions: [
+      "Day 1 — Bagdogra/NJP transfer + Gangtok local sightseeing",
+      "Overnight in Gangtok",
+      "Day 2 — Tsomgo Lake & Baba Mandir (PAP, SUV)"
+    ],
+    description: "The easiest first taste of Sikkim — a city day in Gangtok, a night in the capital, and the Tsomgo Lake high-altitude run the next morning.",
+    suvOnly: true,
+    restrictions: ["SUV-only for the Tsomgo leg; PAP arranged by us.", "Hotel billed separately."]
   },
   {
     id: "sikkim-north-expedition",
     destinationId: "gangtok",
-    name: "North Sikkim Majestic Expedition (Lachen & Lachung)",
+    name: "North Sikkim Expedition (Lachen & Lachung)",
+    category: "multi-day",
     duration: "3 Days / 2 Nights",
     priceSedan: null,
     priceSuv: 18500,
     attractions: [
-      "Gurudongmar Sacred Lake (17,800 ft)",
+      "Gurudongmar Sacred Lake — 17,800 ft",
       "Yumthang Valley of Flowers",
       "Lachen & Lachung Monasteries",
-      "Seven Sisters Waterfalls",
       "Zero Point (Yumesamdong)"
     ],
-    description: "A legendary adventure through high-altitude desert plateaus, alpine valleys, bubbling thermal springs, and the sacred Gurudongmar Lake, one of the highest lakes in the world.",
+    description: "A legendary high-altitude expedition through alpine valleys, thermal springs and the sacred Gurudongmar Lake, one of the highest lakes on earth.",
     suvOnly: true,
     restrictions: [
-      "Requires 3-day dedicated custom SUV dispatch.",
-      "Extreme altitude. Not recommended for infants or tourists with severe respiratory illnesses.",
-      "Requires specialized Protected Area Permits (PAP)."
+      "Dedicated 3-day SUV dispatch with specialized PAPs.",
+      "Extreme altitude — not advised for infants or severe respiratory conditions."
     ]
   },
 
-  /* --- Kalimpong Sightseeing --- */
+  /* ===================== KALIMPONG ===================== */
   {
     id: "kalimpong-heritage-5pt",
     destinationId: "kalimpong",
-    name: "Kalimpong Heritage & Deolo Hill 5-Point Tour",
-    duration: "4 Hours (Half Day)",
+    name: "Kalimpong Heritage & Deolo Hill",
+    category: "half-day",
+    duration: "4–5 hrs",
     priceSedan: 2200,
     priceSuv: 3200,
     attractions: [
-      "Deolo Hill (Highest Point & Paragliding)",
-      "Durpin Dara Monastery (Zang Dhok Palri Phodang)",
-      "Morgan House (Colonial Heritage Architecture)",
+      "Deolo Hill (highest point, paragliding)",
+      "Durpin Monastery (Zang Dhok Palri Phodang)",
+      "Morgan House (colonial heritage)",
       "Pine View Cactus Nursery",
       "Mangal Dham Temple"
     ],
-    description: "A refined half-day cultural expedition through Kalimpong's hilltop monasteries, colonial-era heritage mansions, panoramic paragliding viewpoints, and world-class botanical nurseries exporting exotic orchids globally.",
+    description: "Hilltop monasteries, colonial mansions, paragliding viewpoints and world-class orchid & cactus nurseries — Kalimpong in one easy half-day.",
     suvOnly: false,
     restrictions: []
   },
 
-  /* --- Kurseong Sightseeing --- */
+  /* ===================== KURSEONG ===================== */
   {
     id: "kurseong-heritage-6pt",
     destinationId: "kurseong",
-    name: "Kurseong Heritage & Makaibari Tea Tour",
-    duration: "5 Hours (Half Day)",
+    name: "Kurseong Heritage & Makaibari Tea",
+    category: "half-day",
+    duration: "5 hrs",
     priceSedan: 1800,
     priceSuv: 2800,
     attractions: [
-      "Eagle's Craig Viewpoint",
+      "Eagle's Crag Viewpoint",
       "Dow Hill Eco Park & Forest",
-      "Makaibari Tea Estate (Heritage Tea Factory Tours)",
+      "Makaibari Tea Estate (heritage factory tour)",
       "Giddapahar Viewpoint & Seti Mata Temple",
-      "Netaji Subhas Chandra Bose Museum",
-      "Ambotia Shiva Mandir"
+      "Netaji Subhas Chandra Bose Museum"
     ],
-    description: "An immersive journey through the Land of White Orchids — featuring panoramic eagle-eye viewpoints, heritage tea factory walkthroughs at Makaibari (world's first organic tea estate), haunted colonial-era boarding school forests, and powerful independence-era museums.",
+    description: "The Land of White Orchids — eagle-eye viewpoints, the world's first organic tea estate at Makaibari, misty forests and an independence-era museum.",
     suvOnly: false,
     restrictions: []
   },
 
-  /* --- Siliguri / Bagdogra Gateway Sightseeing --- */
+  /* ===================== MIRIK ===================== */
+  {
+    id: "mirik-lake-bokar",
+    destinationId: "mirik",
+    name: "Mirik Lake & Bokar Monastery",
+    category: "full-day",
+    duration: "Full Day · 8 hrs",
+    priceSedan: 2400,
+    priceSuv: 3400,
+    attractions: [
+      "Sumendu Lake & arch footbridge (boating)",
+      "Bokar Monastery (hilltop meditation centre)",
+      "Tingling View Point (tea-garden panorama)",
+      "Pashupati Market (Nepal border — optional)"
+    ],
+    description: "A calm day at Sumendu Lake — boating and pine trails — plus Bokar Monastery's lake views and sweeping tea-garden vistas at Tingling.",
+    suvOnly: false,
+    restrictions: ["Indian ID needed to cross to Pashupati Market."]
+  },
+
+  /* ===================== LAMAHATTA · TAKDAH · TINCHULEY ===================== */
+  {
+    id: "lamahatta-takdah-tinchuley",
+    destinationId: "lamahatta-takdah",
+    name: "Lamahatta · Takdah · Tinchuley Loop",
+    category: "half-day",
+    duration: "5–6 hrs",
+    priceSedan: 2200,
+    priceSuv: 3200,
+    attractions: [
+      "Lamahatta Eco Park",
+      "Takdah Orchid Centre & British heritage bungalows",
+      "Tinchuley Viewpoint",
+      "Peshok Tea Garden",
+      "Gumbadara Viewpoint"
+    ],
+    description: "Misty pine forests at Lamahatta, colonial bungalows and orchids at Takdah, and offbeat Kanchenjunga panoramas at Tinchuley.",
+    suvOnly: false,
+    restrictions: []
+  },
+
+  /* ===================== TEESTA ===================== */
+  {
+    id: "teesta-river-adventure",
+    destinationId: "teesta",
+    name: "Teesta River Adventure & Rafting",
+    category: "full-day",
+    duration: "Full Day · 8 hrs",
+    priceSedan: 2600,
+    priceSuv: 3600,
+    attractions: [
+      "Lovers Meet View Point (Rangeet–Teesta confluence)",
+      "Triveni Camping Ground & Sangam",
+      "Teesta white-water rafting (Class II–III)",
+      "Coronation Bridge"
+    ],
+    description: "See the rivers crash together from the highway, descend to the white sand at Triveni, and raft the gorges of the Teesta valley.",
+    suvOnly: false,
+    restrictions: ["Rafting is river-level dependent; may pause in heavy monsoon."]
+  },
+
+  /* ===================== SITTONG ===================== */
+  {
+    id: "sittong-orange-village",
+    destinationId: "sittong",
+    name: "Sittong Orange Village & Bamboo Church",
+    category: "full-day",
+    duration: "Full Day · 7–8 hrs",
+    priceSedan: 2800,
+    priceSuv: 3800,
+    attractions: [
+      "Orange orchards (best Nov–Jan)",
+      "Sittong Bamboo Church",
+      "Jogighat suspension bridge",
+      "Riang River banks"
+    ],
+    description: "A quiet, offbeat day among orange orchards and clear streams, with Kanchenjunga views and warm homestay hospitality away from the crowds.",
+    suvOnly: false,
+    restrictions: ["Steep, partly unpaved roads — SUV strongly recommended."]
+  },
+
+  /* ===================== LAVA & LOLEGAON ===================== */
+  {
+    id: "lava-lolegaon-canopy",
+    destinationId: "lava-lolegaon",
+    name: "Lava, Lolegaon & Canopy Walk",
+    category: "full-day",
+    duration: "Full Day · 9 hrs",
+    priceSedan: 3500,
+    priceSuv: 4800,
+    attractions: [
+      "Lava Jamgyong Monastery",
+      "Lolegaon Canopy Walk",
+      "Neora Valley National Park edge",
+      "Changey Waterfall"
+    ],
+    description: "Misty pine forests on the edge of Neora Valley, the famous Lolegaon canopy walk, and a serene Buddhist monastery at Lava.",
+    suvOnly: false,
+    restrictions: []
+  },
+
+  /* ===================== RESHI KHOLA ===================== */
+  {
+    id: "reshi-khola-riverside",
+    destinationId: "reshi-khola",
+    name: "Reshi Khola Riverside Retreat",
+    category: "full-day",
+    duration: "Full Day · 8 hrs",
+    priceSedan: null,
+    priceSuv: 4500,
+    attractions: [
+      "Reshi River banks & camping spots",
+      "Angling / fishing",
+      "Forest trekking trails",
+      "Organic Himalayan meals"
+    ],
+    description: "A laid-back day by the Reshi River on the Bengal–Sikkim border — riverside walks, fishing, and birdsong away from any crowd.",
+    suvOnly: true,
+    restrictions: ["Gravel river tracks — SUV-only dispatch to the campsites."]
+  },
+
+  /* ===================== SILIGURI GATEWAY ===================== */
   {
     id: "siliguri-gateway-5pt",
     destinationId: "siliguri",
-    name: "Siliguri Gateway & Bengal Safari Explorer",
-    duration: "4.5 Hours (Half Day)",
+    name: "Siliguri Gateway & Bengal Safari",
+    category: "half-day",
+    duration: "4–5 hrs",
     priceSedan: 2000,
     priceSuv: 3000,
     attractions: [
-      "Bengal Safari Park (Royal Bengal Tiger Habitat)",
-      "Salugara Monastery & Kali Mandir Stupa",
-      "ISKCON Sri Sri Radha Madhava Temple",
-      "Hong Kong Market (Iconic Electronics & Fashion Bazaar)",
-      "Mahananda Wildlife Sanctuary Gateway"
+      "Bengal Safari Park (Royal Bengal Tiger habitat)",
+      "Salugara Monastery & Stupa",
+      "ISKCON Temple",
+      "Hong Kong Market"
     ],
-    description: "Explore the vibrant gateway city connecting the Himalayan corridors — from Bengal Safari Park's majestic tiger habitats and ancient monastery stupas to the bustling Hong Kong Market bazaars and serene wildlife sanctuary borders.",
+    description: "A handy half-day in the gateway city — tiger safari, monastery stupa, and the buzzing Hong Kong Market, perfect for a layover.",
     suvOnly: false,
     restrictions: []
   },
 
-  /* --- Nepal Borderlands & Ilam Tea --- */
+  /* ===================== DARJEELING ZOO & HMI ===================== */
+  {
+    id: "darjeeling-zoo-hmi",
+    destinationId: "darjeeling-zoo",
+    name: "Padmaja Naidu Zoo & HMI",
+    category: "one-time",
+    duration: "2.5–3 hrs",
+    priceSedan: 1200,
+    priceSuv: 1900,
+    attractions: [
+      "Red Panda & Snow Leopard enclosures",
+      "HMI Everest Museum",
+      "Tenzing Rock"
+    ],
+    description: "A focused visit to the famous high-altitude zoo and the Himalayan Mountaineering Institute on the same campus.",
+    suvOnly: false,
+    restrictions: ["Closed on Thursdays."]
+  },
+
+  /* ===================== NEPAL ===================== */
   {
     id: "nepal-borderlands-expedition",
     destinationId: "nepal",
-    name: "Nepal Borderlands & Ilam Tea Expedition",
-    duration: "Full Day (10–12 Hours)",
+    name: "Nepal Borderlands & Ilam Tea",
+    category: "full-day",
+    duration: "Full Day · 10–12 hrs",
     priceSedan: 5500,
     priceSuv: 7500,
     attractions: [
-      "Panitanki Border Crossing (Indian Side Customs)",
-      "Kakarvitta (Nepal Transit Hub)",
-      "Ilam Tea Gardens & Rolling Hills",
-      "Kanyam Picnic Viewpoint",
-      "Antu Danda (Sunrise Viewpoint, Eastern Nepal)"
+      "Panitanki–Kakarvitta border crossing",
+      "Ilam Tea Gardens",
+      "Kanyam picnic viewpoint",
+      "Antu Danda sunrise viewpoint"
     ],
-    description: "An overland expedition through the eastern Nepal border corridor, featuring lush Nepalese tea plantations in Ilam, scenic Kanyam panoramas, and the legendary Antu Danda sunrise viewpoint — where the first light of Nepal touches the earth.",
+    description: "An overland day into eastern Nepal — lush Ilam tea plantations, the Kanyam panorama, and the Antu Danda sunrise where Nepal's first light lands.",
     suvOnly: false,
-    restrictions: ["Requires Border Custom Permit (Bhansar) and Yatayat Anumati.", "Indian vehicles allowed a maximum of 30 days per year in Nepal."]
+    restrictions: ["Border Custom Permit (Bhansar) required.", "Indian vehicles allowed max 30 days/year in Nepal."]
   },
 
-  /* --- Bhutan Thunder Dragon --- */
+  /* ===================== BHUTAN ===================== */
   {
     id: "bhutan-thunder-dragon-voyage",
     destinationId: "bhutan",
-    name: "Bhutan Thunder Dragon Cultural Voyage",
+    name: "Bhutan Thunder Dragon Voyage",
+    category: "multi-day",
     duration: "3 Days / 2 Nights",
     priceSedan: 18000,
     priceSuv: 26000,
     attractions: [
-      "Phuentsholing Gate (Border Handshake Hub)",
-      "Karbandi Monastery (Phuentsholing)",
-      "Thimphu City Center & Clock Tower Square",
-      "Buddha Dordenma (Massive Buddha Statue)",
-      "Tashichho Dzong (Fortress & Government Seat)",
-      "Paro Taktsang (Tiger's Nest — Heavy Trekking)"
+      "Phuentsholing border gate",
+      "Thimphu city & Buddha Dordenma",
+      "Tashichho Dzong",
+      "Paro Taktsang (Tiger's Nest trek)"
     ],
-    description: "A legendary cultural voyage into the Land of the Thunder Dragon — spanning ancient cliff monasteries, fortress dzongs guarding pristine valleys, the colossal Buddha Dordenma overlooking Thimphu, and the gravity-defying Tiger's Nest clinging to a Himalayan cliff face.",
+    description: "A cultural voyage into the Land of the Thunder Dragon — fortress dzongs, the colossal Buddha Dordenma, and the cliff-clinging Tiger's Nest.",
     suvOnly: false,
-    restrictions: ["Vehicle + driver only — SDF of ₹1,200/person/night and ₹4,500 daily Green Tax are billed separately.", "Indian vehicles swap at Jaigaon/Phuentsholing border; in-country transport on Bhutanese plate."]
+    restrictions: [
+      "SDF ₹1,200/person/night + ₹4,500 daily Green Tax billed separately.",
+      "Vehicles swap at Jaigaon/Phuentsholing; in-country transport on Bhutanese plate."
+    ]
   }
 ];

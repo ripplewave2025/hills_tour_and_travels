@@ -1,16 +1,19 @@
 /* ==========================================
-   HILLS TOUR & TRAVELS — SIGHTSEEING SWIPER (TINDER DECK)
+   HILLS TOUR & TRAVELS — DESTINATION SLIDER
    ==========================================
-   A highly polished, responsive Tinder-style card deck that stacks
-   cards in the center of the viewport, eliminating empty top space.
-   Supports touch/mouse dragging to flip cards and a dual-tab toggle
-   ("Destinations" vs "Experiences") connected dynamically to the navbar.
+   Expanding-card slider (per design/curated/code_for_the_packages_slider.md):
+   the active destination image fills the stage while the upcoming
+   destinations queue as small cards on the right. Advancing rotates the
+   deck; because every card is the SAME persistent DOM node that simply
+   transitions to a new CSS position, the motion is smooth (no image
+   "jumping"). Tabs (Destinations / Experiences) and the "See Packages"
+   bottom sheet are preserved. Swipeable on touch.
    ========================================== */
 
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { destinations } from '../../data/destinations.js';
-import { packages } from '../../data/packages.js';
+import { packages, CATEGORY_LABELS, CATEGORY_ORDER } from '../../data/packages.js';
 
 // Pre-curated segments based on customer personas
 const AUDIENCE_CATEGORIES = [
@@ -82,218 +85,145 @@ const AUDIENCE_CATEGORIES = [
   }
 ];
 
-const TINTS = {
-  darjeeling:        'linear-gradient(180deg, rgba(245, 158, 11, 0.05) 0%, rgba(6, 9, 19, 0.92) 100%)',
-  gangtok:           'linear-gradient(180deg, rgba(56, 189, 248, 0.05) 0%, rgba(6, 9, 19, 0.92) 100%)',
-  bhutan:            'linear-gradient(180deg, rgba(244, 114, 182, 0.05) 0%, rgba(6, 9, 19, 0.92) 100%)',
-  nepal:             'linear-gradient(180deg, rgba(248, 113, 113, 0.05) 0%, rgba(6, 9, 19, 0.92) 100%)',
-  family:            'linear-gradient(180deg, rgba(34, 197, 94, 0.05) 0%, rgba(6, 9, 19, 0.92) 100%)',
-  romantic:          'linear-gradient(180deg, rgba(236, 72, 153, 0.05) 0%, rgba(6, 9, 19, 0.92) 100%)',
-  solo:              'linear-gradient(180deg, rgba(59, 130, 246, 0.05) 0%, rgba(6, 9, 19, 0.92) 100%)',
-  friends:           'linear-gradient(180deg, rgba(168, 85, 247, 0.05) 0%, rgba(6, 9, 19, 0.92) 100%)',
-  corporate:         'linear-gradient(180deg, rgba(234, 179, 8, 0.05) 0%, rgba(6, 9, 19, 0.92) 100%)',
-  luxury:            'linear-gradient(180deg, rgba(20, 184, 166, 0.05) 0%, rgba(6, 9, 19, 0.92) 100%)'
-};
-
-const defaultTint = 'linear-gradient(180deg, rgba(245, 158, 11, 0.05) 0%, rgba(6, 9, 19, 0.92) 100%)';
+// A soft dark gradient keeps the bottom-left text legible over any photo.
+const SCRIM = 'linear-gradient(0deg, rgba(6,9,19,0.85) 0%, rgba(6,9,19,0.25) 45%, rgba(6,9,19,0.05) 100%)';
 
 function itemBackground(item) {
-  const tint = TINTS[item.id] || defaultTint;
-  return `${tint}, url(${item.image})`;
+  return `${SCRIM}, url(${item.image})`;
+}
+
+// The slider keeps the first TWO cards full-screen (per the reference design)
+// and shows content on the 2nd. Starting with the last index in front means
+// items[0] is the visible "active" card on load. This is what makes advancing
+// seamless: the active image stays full-screen as the next card grows in.
+function startOrder(len) {
+  const seq = Array.from({ length: len }, (_, i) => i);
+  return seq.length ? [seq[seq.length - 1], ...seq.slice(0, -1)] : seq;
 }
 
 export function SwipePackages({ query }) {
-  // Sync tab with URL query parameter, e.g., ?tab=experiences or ?tab=destinations
   const getInitialTab = () => {
     if (query?.tab === 'experiences') return 'experiences';
-    if (query?.tab === 'destinations') return 'destinations';
     return 'destinations';
   };
 
   const [activeTab, setActiveTab] = useState(getInitialTab);
   const items = activeTab === 'experiences' ? AUDIENCE_CATEGORIES : destinations;
-  
-  // Track deck sequence array
-  const [order, setOrder] = useState(() => items.map((_, i) => i));
-  const [openItem, setOpenItem] = useState(null);
 
-  // Sync state if navbar triggers route query change
+  // Deck rotation order (array of indexes into `items`)
+  const [order, setOrder] = useState(() => startOrder(items.length));
+  const [openItem, setOpenItem] = useState(null);
+  const touchStartX = useRef(null);
+
   useEffect(() => {
-    const nextTab = getInitialTab();
-    setActiveTab(nextTab);
+    setActiveTab(getInitialTab());
   }, [query?.tab]);
 
-  // Reset deck indexes when active tab toggles
+  // Reset the deck whenever the tab (and therefore the item set) changes
   useEffect(() => {
-    setOrder(items.map((_, i) => i));
+    setOrder(startOrder(items.length));
   }, [activeTab, items.length]);
 
   const next = useCallback(() => {
-    setOrder((o) => [...o.slice(1), o[0]]);
+    setOrder((o) => (o.length ? [...o.slice(1), o[0]] : o));
   }, []);
 
   const prev = useCallback(() => {
-    setOrder((o) => [o[o.length - 1], ...o.slice(0, -1)]);
+    setOrder((o) => (o.length ? [o[o.length - 1], ...o.slice(0, -1)] : o));
   }, []);
 
   const handleTabChange = (tab) => {
     setActiveTab(tab);
-    // Update hash query silently so it matches URL structure
     window.location.hash = `#/packages?tab=${tab}`;
   };
 
-  return (
-    <div className="ps-root">
-      <header className="ps-header">
-        <div className="ps-header-main">
-          <div className="ps-header-left animate-fade-in">
-            <span className="badge badge-brand">
-              <i className="fa-solid fa-sparkles" /> {activeTab === 'experiences' ? 'Audience Tiers' : 'Corridor Explorer'}
-            </span>
-            <h1 className="ps-title">{activeTab === 'experiences' ? 'Experiences' : 'Destinations'}</h1>
-          </div>
+  // Lightweight touch swipe on the stage
+  const onTouchStart = (e) => { touchStartX.current = e.touches[0].clientX; };
+  const onTouchEnd = (e) => {
+    if (touchStartX.current == null) return;
+    const dx = e.changedTouches[0].clientX - touchStartX.current;
+    if (dx < -50) next();
+    else if (dx > 50) prev();
+    touchStartX.current = null;
+  };
 
-          <div className="ps-tabs-container">
-            <button
-              type="button"
-              className={`ps-tab-btn ${activeTab === 'destinations' ? 'is-active' : ''}`}
-              onClick={() => handleTabChange('destinations')}
-            >
-              <i className="fa-solid fa-map-location-dot" /> Destinations
-            </button>
-            <button
-              type="button"
-              className={`ps-tab-btn ${activeTab === 'experiences' ? 'is-active' : ''}`}
-              onClick={() => handleTabChange('experiences')}
-            >
-              <i className="fa-solid fa-sparkles" /> Experiences
-            </button>
-          </div>
+  // The visible "active" card is the 2nd in DOM order (nth-child(2))
+  const activeIndex = order.length > 1 ? order[1] : (order[0] ?? 0);
+
+  return (
+    <div className="hpkg-root">
+      <header className="hpkg-header">
+        <div className="hpkg-header-left">
+          <span className="badge badge-brand">
+            <i className="fa-solid fa-sparkles" /> {activeTab === 'experiences' ? 'Audience Tiers' : 'Corridor Explorer'}
+          </span>
+          <h1 className="hpkg-title">{activeTab === 'experiences' ? 'Experiences' : 'Destinations'}</h1>
+        </div>
+
+        <div className="hpkg-tabs">
+          <button
+            type="button"
+            className={`hpkg-tab ${activeTab === 'destinations' ? 'is-active' : ''}`}
+            onClick={() => handleTabChange('destinations')}
+          >
+            <i className="fa-solid fa-map-location-dot" /> Destinations
+          </button>
+          <button
+            type="button"
+            className={`hpkg-tab ${activeTab === 'experiences' ? 'is-active' : ''}`}
+            onClick={() => handleTabChange('experiences')}
+          >
+            <i className="fa-solid fa-sparkles" /> Experiences
+          </button>
         </div>
       </header>
 
-      {/* Tinder Overlapping Stack Container */}
-      <div className="ps-stage">
-        <div className="ps-deck">
-          {order.map((itemIdx, stackIndex) => {
+      <div className="hpkg-stage" onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
+        <div className="hpkg-slide">
+          {order.map((itemIdx) => {
             const item = items[itemIdx];
             if (!item) return null;
-
-            // Tinder layers styling: index 0 is on top, 1 peeks, 2 stands back.
-            // Cards are rendered in reverse order in DOM so index 0 stays on top.
-            const isTopCard = stackIndex === 0;
-            const isSecondCard = stackIndex === 1;
-            const isThirdCard = stackIndex === 2;
-            const isVisible = stackIndex < 3;
-
-            let scale = 0.85;
-            let yOffset = 30;
-            let opacity = 0;
-            let pointerEvents = 'none';
-
-            if (isTopCard) {
-              scale = 1.0;
-              yOffset = 0;
-              opacity = 1;
-              pointerEvents = 'auto';
-            } else if (isSecondCard) {
-              scale = 0.94;
-              yOffset = 15;
-              opacity = 0.85;
-              pointerEvents = 'none';
-            } else if (isThirdCard) {
-              scale = 0.88;
-              yOffset = 30;
-              opacity = 0.55;
-              pointerEvents = 'none';
-            }
-
             return (
-              <motion.div
+              <div
                 key={item.id}
-                className={`ps-item-tinder ${isTopCard ? 'is-active-card' : ''}`}
-                style={{
-                  backgroundImage: itemBackground(item),
-                  zIndex: items.length - stackIndex,
-                  pointerEvents
-                }}
-                animate={{
-                  scale,
-                  y: yOffset,
-                  opacity,
-                  transition: { duration: 0.45, ease: [0.25, 1, 0.5, 1] }
-                }}
-                drag={isTopCard ? 'x' : false}
-                dragConstraints={{ left: 0, right: 0 }}
-                dragElastic={0.65}
-                onDragEnd={(event, info) => {
-                  const threshold = 110;
-                  if (info.offset.x < -threshold) {
-                    next(); // Swiped left
-                  } else if (info.offset.x > threshold) {
-                    prev(); // Swiped right
-                  }
-                }}
+                className="hpkg-item"
+                style={{ backgroundImage: itemBackground(item) }}
               >
-                {/* Visual Content inside the top card */}
-                {isTopCard && (
-                  <div className="ps-content animate-fade-in">
-                    <div className="ps-meta-row">
-                      {item.permitRequired && (
-                        <span className="ps-chip ps-chip-warn">
-                          <i className="fa-solid fa-id-card" /> Permit Required
-                        </span>
-                      )}
-                      <span className="ps-badge-tag">
-                        <i className="fa-solid fa-mountain" /> {item.elevation}
-                      </span>
-                    </div>
-                    
-                    <h2 className="ps-name">{item.name}</h2>
-                    <p className="ps-desc">{item.tagline}</p>
-                    <p className="ps-long-desc">{item.description}</p>
-                    
-                    <button
-                      type="button"
-                      className="ps-cta"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setOpenItem(item);
-                      }}
-                    >
-                      <span>See Packages</span>
-                      <i className="fa-solid fa-arrow-right" aria-hidden="true" />
-                    </button>
+                <div className="hpkg-content">
+                  <div className="hpkg-chips">
+                    {item.permitRequired && (
+                      <span className="hpkg-chip hpkg-chip-warn"><i className="fa-solid fa-id-card" /> Permit</span>
+                    )}
+                    {item.elevation && (
+                      <span className="hpkg-chip"><i className="fa-solid fa-mountain" /> {item.elevation}</span>
+                    )}
                   </div>
-                )}
-              </motion.div>
+                  <div className="hpkg-name">{item.name}</div>
+                  <div className="hpkg-des">{item.tagline}</div>
+                  <button
+                    type="button"
+                    className="hpkg-cta"
+                    onClick={(e) => { e.stopPropagation(); setOpenItem(item); }}
+                  >
+                    <i className="fa-solid fa-bolt" aria-hidden="true" />
+                    <span>Book Now</span>
+                  </button>
+                </div>
+              </div>
             );
           })}
         </div>
 
-        {/* Floating Tinder Navigation Controls */}
-        <div className="ps-nav" role="group" aria-label="Slider navigation">
-          <button
-            type="button"
-            className="ps-btn ps-prev"
-            onClick={prev}
-            aria-label="Previous card"
-          >
+        <div className="hpkg-nav" role="group" aria-label="Destination slider navigation">
+          <button type="button" className="hpkg-arrow" onClick={prev} aria-label="Previous destination">
             <i className="fa-solid fa-chevron-left" aria-hidden="true" />
           </button>
-          
-          <div className="ps-nav-info">
-            <span className="ps-counter-cur">{(order[0] ?? 0) + 1}</span>
-            <span className="ps-counter-sep">/</span>
+          <div className="hpkg-counter">
+            <span className="hpkg-counter-cur">{activeIndex + 1}</span>
+            <span className="hpkg-counter-sep">/</span>
             <span>{items.length}</span>
           </div>
-
-          <button
-            type="button"
-            className="ps-btn ps-next"
-            onClick={next}
-            aria-label="Next card"
-          >
+          <button type="button" className="hpkg-arrow" onClick={next} aria-label="Next destination">
             <i className="fa-solid fa-chevron-right" aria-hidden="true" />
           </button>
         </div>
@@ -313,10 +243,14 @@ export function SwipePackages({ query }) {
 }
 
 function BottomSheet({ item, activeTab, onClose }) {
-  // Query matching packages based on tab mode (destinationId vs packageIds array)
   const pkgs = activeTab === 'experiences'
     ? packages.filter((p) => item.packageIds.includes(p.id))
     : packages.filter((p) => p.destinationId === item.id);
+
+  // Group by duration tier (One-Time → Half-Day → Full-Day → 2-Day → Multi-Day)
+  const groups = CATEGORY_ORDER
+    .map((cat) => ({ cat, label: CATEGORY_LABELS[cat], list: pkgs.filter((p) => p.category === cat) }))
+    .filter((g) => g.list.length > 0);
 
   return (
     <motion.div
@@ -347,12 +281,7 @@ function BottomSheet({ item, activeTab, onClose }) {
             <h2>{item.name}</h2>
             <p>{item.tagline}</p>
           </div>
-          <button
-            type="button"
-            className="sw-sheet-close"
-            onClick={onClose}
-            aria-label="Close packages sheet"
-          >
+          <button type="button" className="sw-sheet-close" onClick={onClose} aria-label="Close packages sheet">
             <i className="fa-solid fa-xmark" />
           </button>
         </header>
@@ -367,13 +296,9 @@ function BottomSheet({ item, activeTab, onClose }) {
           <div className="sw-sheet-empty">
             <i className="fa-solid fa-hourglass-half" />
             <h3>Packages Coming Soon</h3>
-            <p>
-              We are curating spectacular bespoke itineraries for this experience. Enquire directly on WhatsApp to book.
-            </p>
+            <p>We are curating spectacular bespoke itineraries for this destination. Enquire directly on WhatsApp to book.</p>
             <a
-              href={`https://wa.me/919907219843?text=${encodeURIComponent(
-                `Hi! I'd like to plan a custom trip for ${item.name}.`
-              )}`}
+              href={`https://wa.me/919907219843?text=${encodeURIComponent(`Hi! I'd like to plan a custom trip for ${item.name}.`)}`}
               target="_blank"
               rel="noopener noreferrer"
               className="sw-sheet-cta-wa"
@@ -383,27 +308,26 @@ function BottomSheet({ item, activeTab, onClose }) {
           </div>
         ) : (
           <div className="sw-sheet-list">
-            {pkgs.map((pkg) => (
+            {groups.map((group) => (
+              <section key={group.cat} className="sw-grp">
+                <div className="sw-grp-label">
+                  <i className="fa-solid fa-clock" aria-hidden="true" /> {group.label}
+                </div>
+                {group.list.map((pkg) => (
               <article key={pkg.id} className="sw-pkg">
                 <div className="sw-pkg-head">
                   <h3>{pkg.name}</h3>
-                  <span className="sw-pkg-dur">
-                    <i className="fa-solid fa-clock" /> {pkg.duration}
-                  </span>
+                  <span className="sw-pkg-dur"><i className="fa-solid fa-clock" /> {pkg.duration}</span>
                 </div>
                 <p className="sw-pkg-desc">
-                  {pkg.description.length > 150
-                    ? `${pkg.description.slice(0, 150)}…`
-                    : pkg.description}
+                  {pkg.description.length > 150 ? `${pkg.description.slice(0, 150)}…` : pkg.description}
                 </p>
                 <div className="sw-pkg-stops">
                   {pkg.attractions.slice(0, 4).map((a) => (
                     <span key={a} className="sw-pkg-stop">{a}</span>
                   ))}
                   {pkg.attractions.length > 4 && (
-                    <span className="sw-pkg-stop sw-pkg-stop-more">
-                      +{pkg.attractions.length - 4} more
-                    </span>
+                    <span className="sw-pkg-stop sw-pkg-stop-more">+{pkg.attractions.length - 4} more</span>
                   )}
                 </div>
                 {pkg.suvOnly && (
@@ -414,9 +338,7 @@ function BottomSheet({ item, activeTab, onClose }) {
                 <div className="sw-pkg-foot">
                   <div className="sw-pkg-price">
                     <span className="sw-pkg-price-lbl">Starting Fare</span>
-                    <span className="sw-pkg-price-val">
-                      ₹{(pkg.priceSedan || pkg.priceSuv).toLocaleString('en-IN')}
-                    </span>
+                    <span className="sw-pkg-price-val">₹{(pkg.priceSedan || pkg.priceSuv).toLocaleString('en-IN')}</span>
                   </div>
                   <a href={`#/booking?package=${pkg.id}`} className="sw-pkg-cta">
                     <span>Book Now</span>
@@ -424,6 +346,8 @@ function BottomSheet({ item, activeTab, onClose }) {
                   </a>
                 </div>
               </article>
+                ))}
+              </section>
             ))}
           </div>
         )}
