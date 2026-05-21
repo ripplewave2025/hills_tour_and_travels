@@ -43,13 +43,8 @@ export const Navbar = {
             <li><a href="#/booking" class="btn btn-primary btn-sm nav-cta">Book Taxi <i class="fa-solid fa-arrow-right"></i></a></li>
           </ul>
 
-          <!-- Right cluster: WhatsApp + language toggle + hamburger -->
+          <!-- Right cluster: language toggle + hamburger -->
           <div class="navbar-right">
-            <a href="https://wa.me/919907219843" target="_blank" rel="noopener noreferrer" class="navbar-whatsapp-btn" title="Contact support on WhatsApp">
-              <i class="fa-brands fa-whatsapp"></i>
-              <span class="navbar-whatsapp-number">+91 99072 19843</span>
-            </a>
-
             <div class="navbar-lang" id="navbar-lang">
               <button type="button" class="navbar-lang-btn" id="navbar-lang-btn" aria-haspopup="listbox" aria-expanded="false" aria-label="Change language">
                 <i class="fa-solid fa-globe"></i>
@@ -85,13 +80,6 @@ export const Navbar = {
             <button class="drawer-close" id="drawer-close-trigger"><i class="fa-solid fa-xmark"></i></button>
           </div>
           
-          <div class="drawer-whatsapp-box">
-            <a href="https://wa.me/919907219843" target="_blank" rel="noopener noreferrer" class="drawer-whatsapp-link">
-              <i class="fa-brands fa-whatsapp"></i> Chat Live Support
-              <span class="drawer-whatsapp-num">+91 99072 19843</span>
-            </a>
-          </div>
-
           <ul class="drawer-links">
             <li><a href="#/" class="drawer-link" id="drawer-home"><i class="fa-solid fa-house"></i> Home</a></li>
             <li><a href="#/packages" class="drawer-link" id="drawer-packages"><i class="fa-solid fa-boxes-packing"></i> Tour Packages</a></li>
