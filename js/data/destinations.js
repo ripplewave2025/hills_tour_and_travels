@@ -172,6 +172,20 @@ export const destinations = [
     alert: "Requires crossing unpaved gravel tracks. Only high-clearance MUV/SUV vehicles are dispatched to the riverside campsites."
   },
   {
+    id: "teesta",
+    name: "Teesta",
+    tagline: "Where Two Rivers Crash Together",
+    elevation: "1,000 ft",
+    bestSeason: "October–May",
+    permitRequired: false,
+    distanceFromBagdogra: "85 km",
+    travelTimeFromBagdogra: "3 hours",
+    image: "https://images.unsplash.com/photo-1544735716-392fe2489ffa?auto=format&fit=crop&q=80&w=1200",
+    description: "The point where the green Rangeet and the dark Teesta rivers converge in a dramatic valley — host to white-water rafting, riverside camping at Triveni, and one of the most photographed viewpoints on the Sikkim highway: Lovers Meet.",
+    highlights: ["Lovers Meet View Point", "Triveni Camping & Sangam", "Teesta River Rafting", "Coronation Bridge", "Sevoke Viewpoint"],
+    alert: "Rafting routes are river-level dependent; operators may cancel during peak monsoon (July–August) for safety."
+  },
+  {
     id: "darjeeling-zoo",
     name: "Darjeeling Zoo & HMI",
     tagline: "Himalayan Wilderness & History",

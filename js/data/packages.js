@@ -3,6 +3,66 @@
    ========================================== */
 
 export const packages = [
+  /* --- Mirik Lake & Bokar Monastery --- */
+  {
+    id: "mirik-lake-bokar",
+    destinationId: "mirik",
+    name: "Mirik Lake & Bokar Monastery Day",
+    duration: "Full Day (8 Hours)",
+    priceSedan: 2400,
+    priceSuv: 3400,
+    attractions: [
+      "Sumendu Lake & Arch Footbridge (Boating)",
+      "Bokar Monastery (Hilltop Meditation Center)",
+      "Tingling View Point (Tea Garden Panorama)",
+      "Mirik Pine Tree Trails",
+      "Pashupati Market (Nepal Border — optional)"
+    ],
+    description: "Spend the day at tranquil Sumendu Lake — boating, the arching footbridge, and pine-shaded trails. Climb to Bokar Monastery for meditation views directly over the lake, then take in sweeping tea-garden vistas at Tingling View Point.",
+    suvOnly: false,
+    restrictions: ["Indian identity card required if continuing across the buffer to Pashupati Market."]
+  },
+
+  /* --- Teesta River Adventure --- */
+  {
+    id: "teesta-river-adventure",
+    destinationId: "teesta",
+    name: "Teesta River Adventure & Rafting",
+    duration: "Full Day (8 Hours)",
+    priceSedan: 2600,
+    priceSuv: 3600,
+    attractions: [
+      "Lovers Meet View Point (Rangeet–Teesta Confluence)",
+      "Triveni Camping Ground & Sangam",
+      "Teesta White-Water Rafting (Class II–III)",
+      "Coronation Bridge",
+      "Sevoke Viewpoint"
+    ],
+    description: "Stand on the highway and look down at the bird's-eye confluence of the Rangeet and Teesta rivers, then descend to the white sand at Triveni for a riverside bonfire or an overnight stay. White-water rafting routes carve through the deep gorges of the valley.",
+    suvOnly: false,
+    restrictions: ["Rafting is river-level dependent — operators may cancel during heavy monsoon flows for safety."]
+  },
+
+  /* --- Darjeeling Toy Train + Happy Valley --- */
+  {
+    id: "darjeeling-toy-train-tea",
+    destinationId: "darjeeling",
+    name: "Toy Train Joyride & Happy Valley Tea Tour",
+    duration: "5 Hours (Half Day)",
+    priceSedan: 2000,
+    priceSuv: 2900,
+    attractions: [
+      "Darjeeling Himalayan Railway Toy Train Joyride",
+      "Ghoom Station & DHR Museum",
+      "Batasia Loop & War Memorial",
+      "Happy Valley Tea Estate (Est. 1854)",
+      "Chowrasta / The Mall (free time)"
+    ],
+    description: "Ride the UNESCO World Heritage 'Toy Train' through the loop at Batasia, then walk the green slopes of Happy Valley — the most accessible tea garden from town, in continuous operation since 1854 — and wrap up at Chowrasta for chai and people-watching.",
+    suvOnly: false,
+    restrictions: ["Toy Train joyride tickets sell out fast in season — book at least 24 hours in advance through us."]
+  },
+
   /* --- Lamahatta · Takdah · Tinchuley Loop --- */
   {
     id: "lamahatta-takdah-tinchuley",

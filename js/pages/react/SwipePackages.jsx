@@ -28,7 +28,8 @@ const TINTS = {
   'lava-lolegaon':   'linear-gradient(180deg, rgba(16, 185, 129, 0.14) 0%, rgba(6, 9, 19, 0.88) 100%)',
   'lamahatta-takdah':'linear-gradient(180deg, rgba(217, 119, 6, 0.14) 0%, rgba(6, 9, 19, 0.88) 100%)',
   'reshi-khola':     'linear-gradient(180deg, rgba(59, 130, 246, 0.14) 0%, rgba(6, 9, 19, 0.88) 100%)',
-  'darjeeling-zoo':  'linear-gradient(180deg, rgba(239, 68, 68, 0.14) 0%, rgba(6, 9, 19, 0.88) 100%)'
+  'darjeeling-zoo':  'linear-gradient(180deg, rgba(239, 68, 68, 0.14) 0%, rgba(6, 9, 19, 0.88) 100%)',
+  'teesta':          'linear-gradient(180deg, rgba(20, 184, 166, 0.16) 0%, rgba(6, 9, 19, 0.88) 100%)'
 };
 
 const defaultTint = 'linear-gradient(180deg, rgba(245, 158, 11, 0.10) 0%, rgba(6, 9, 19, 0.88) 100%)';
