@@ -320,14 +320,14 @@ export const packages = [
     restrictions: []
   },
 
-  /* --- Nepal Coming Soon --- */
+  /* --- Nepal Borderlands & Ilam Tea --- */
   {
     id: "nepal-borderlands-expedition",
     destinationId: "nepal",
     name: "Nepal Borderlands & Ilam Tea Expedition",
     duration: "Full Day (10–12 Hours)",
-    priceSedan: null,
-    priceSuv: null,
+    priceSedan: 5500,
+    priceSuv: 7500,
     attractions: [
       "Panitanki Border Crossing (Indian Side Customs)",
       "Kakarvitta (Nepal Transit Hub)",
@@ -337,18 +337,17 @@ export const packages = [
     ],
     description: "An overland expedition through the eastern Nepal border corridor, featuring lush Nepalese tea plantations in Ilam, scenic Kanyam panoramas, and the legendary Antu Danda sunrise viewpoint — where the first light of Nepal touches the earth.",
     suvOnly: false,
-    restrictions: ["Requires Border Custom Permit (Bhansar) and Yatayat Anumati.", "Indian vehicles allowed a maximum of 30 days per year in Nepal."],
-    isComingSoon: true
+    restrictions: ["Requires Border Custom Permit (Bhansar) and Yatayat Anumati.", "Indian vehicles allowed a maximum of 30 days per year in Nepal."]
   },
 
-  /* --- Bhutan Coming Soon --- */
+  /* --- Bhutan Thunder Dragon --- */
   {
     id: "bhutan-thunder-dragon-voyage",
     destinationId: "bhutan",
     name: "Bhutan Thunder Dragon Cultural Voyage",
     duration: "3 Days / 2 Nights",
-    priceSedan: null,
-    priceSuv: null,
+    priceSedan: 18000,
+    priceSuv: 26000,
     attractions: [
       "Phuentsholing Gate (Border Handshake Hub)",
       "Karbandi Monastery (Phuentsholing)",
@@ -359,7 +358,6 @@ export const packages = [
     ],
     description: "A legendary cultural voyage into the Land of the Thunder Dragon — spanning ancient cliff monasteries, fortress dzongs guarding pristine valleys, the colossal Buddha Dordenma overlooking Thimphu, and the gravity-defying Tiger's Nest clinging to a Himalayan cliff face.",
     suvOnly: false,
-    restrictions: ["Mandatory Sustainable Development Fee (SDF) of ₹1,200/person/night applies.", "Commercial vehicles pay ₹4,500 daily Green Tax.", "Indian vehicles swap at Jaigaon/Phuentsholing border."],
-    isComingSoon: true
+    restrictions: ["Vehicle + driver only — SDF of ₹1,200/person/night and ₹4,500 daily Green Tax are billed separately.", "Indian vehicles swap at Jaigaon/Phuentsholing border; in-country transport on Bhutanese plate."]
   }
 ];
