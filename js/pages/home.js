@@ -2,10 +2,13 @@
    HILLS TOUR & TRAVELS — HOME PAGE
    ========================================== */
 
+import { createRoot } from 'react-dom/client';
+import { createElement } from 'react';
 import { destinations } from '../data/destinations.js';
 import { packages } from '../data/packages.js';
 import { vehicles } from '../data/vehicles.js';
 import { SearchBar } from '../components/search-bar.js';
+import { HillsHero } from '../components/react/HillsHero.jsx';
 
 export const Home = {
   render() {
@@ -17,18 +20,13 @@ export const Home = {
     this.toSearch = new SearchBar("home-to-input", "home-to-dropdown", "to");
 
     return `
-      <!-- 1. Cinematic Hero Section -->
-      <section class="hero-section">
-        <div class="hero-background animate-fade-in" style="background-image: linear-gradient(rgba(6, 9, 19, 0.4), #060913), url('https://images.unsplash.com/photo-1544735716-392fe2489ffa?auto=format&fit=crop&q=75&w=${window.innerWidth <= 768 ? 800 : 1600}');"></div>
-        <div class="container hero-container">
-          <div class="hero-content text-center animate-fade-up">
-            <span class="badge badge-brand mb-1"><i class="fa-solid fa-mountain"></i> Elevating Mountain Travel</span>
-            <h1 class="hero-title">Your Ultimate Himalayan Mobility Partner</h1>
-            <p class="hero-subtitle">Experience instant, transparent, and syndicate-free taxi services across Darjeeling, Sikkim, Nepal, and Bhutan.</p>
-          </div>
+      <!-- 1. Cinematic Hero — React + framer-motion 3-image carousel -->
+      <div id="hills-hero-mount"></div>
 
-          <!-- Quick Booking Glass Panel -->
-          <div class="quick-booking-bar glass-panel animate-fade-up" style="animation-delay: 0.2s;">
+      <!-- 1b. Booking strip — overlaps hero bottom -->
+      <section class="hero-booking-strip">
+        <div class="container">
+          <div class="quick-booking-bar glass-panel">
             <div class="booking-grid">
               <div class="booking-field-col">
                 <label class="form-label"><i class="fa-solid fa-circle-dot text-brand"></i> Pick-up Location (Ride From)</label>
@@ -306,6 +304,17 @@ export const Home = {
   },
 
   init() {
+    // 0. Mount the React + framer-motion hero
+    const heroMount = document.getElementById('hills-hero-mount');
+    if (heroMount) {
+      try {
+        this.heroRoot = createRoot(heroMount);
+        this.heroRoot.render(createElement(HillsHero));
+      } catch (err) {
+        console.error('🚨 [Home] Failed to mount HillsHero:', err);
+      }
+    }
+
     // 1. Initialize Autocompletes
     this.fromSearch.init((item) => {
       // Callback if needed
@@ -474,6 +483,9 @@ export const Home = {
   },
 
   destroy() {
-    // Cleanups
+    if (this.heroRoot) {
+      try { this.heroRoot.unmount(); } catch (e) { /* noop */ }
+      this.heroRoot = null;
+    }
   }
 };
