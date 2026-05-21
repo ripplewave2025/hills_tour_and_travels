@@ -1,208 +1,148 @@
 /* ==========================================
-   HILLS TOUR & TRAVELS — TINDER-STYLE DESTINATION DECK
+   HILLS TOUR & TRAVELS — FANNED DESTINATION SLIDER
    ==========================================
-   Full-screen swipeable deck of destinations. Drag right (or tap heart)
-   opens a bottom-sheet listing packages tied to that destination with
-   Book Now CTAs. Drag left (or tap ✕) advances to the next card. Cards
-   cycle endlessly. Destinations without curated packages show a
-   "Coming Soon" sheet with a WhatsApp enquiry CTA.
+   Lead full-bleed card with name + tagline + "Book This One" CTA;
+   peek cards stacked to the right. Prev / Next arrows reorder the
+   deck. Touch swipe also advances. Tapping the CTA on the active
+   card opens a bottom-sheet listing every package tied to that
+   destination with Book Now deep-links into /booking.
    ========================================== */
 
-import { useState, useMemo, useCallback } from 'react';
-import { motion, AnimatePresence, useMotionValue, useTransform } from 'framer-motion';
+import { useState, useRef, useCallback } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { destinations } from '../../data/destinations.js';
 import { packages } from '../../data/packages.js';
 
-const SWIPE_THRESHOLD = 110;
-const STACK_DEPTH = 3;
-
-// Per-destination overlay tint — destinations sharing the placeholder
-// Unsplash photo still look distinct via colored gradient overlays.
+// Per-destination tint so destinations sharing a placeholder photo
+// still feel visually distinct.
 const TINTS = {
-  darjeeling:        'linear-gradient(165deg, rgba(245, 158, 11, 0.18) 0%, rgba(6, 9, 19, 0.85) 100%)',
-  gangtok:           'linear-gradient(165deg, rgba(56, 189, 248, 0.18) 0%, rgba(6, 9, 19, 0.85) 100%)',
-  bhutan:            'linear-gradient(165deg, rgba(244, 114, 182, 0.18) 0%, rgba(6, 9, 19, 0.85) 100%)',
-  nepal:             'linear-gradient(165deg, rgba(248, 113, 113, 0.18) 0%, rgba(6, 9, 19, 0.85) 100%)',
-  siliguri:          'linear-gradient(165deg, rgba(167, 139, 250, 0.18) 0%, rgba(6, 9, 19, 0.85) 100%)',
-  kalimpong:         'linear-gradient(165deg, rgba(45, 212, 191, 0.20) 0%, rgba(6, 9, 19, 0.85) 100%)',
-  kurseong:          'linear-gradient(165deg, rgba(132, 204, 22, 0.20) 0%, rgba(6, 9, 19, 0.85) 100%)',
-  mirik:             'linear-gradient(165deg, rgba(14, 165, 233, 0.22) 0%, rgba(6, 9, 19, 0.85) 100%)',
-  sittong:           'linear-gradient(165deg, rgba(251, 146, 60, 0.22) 0%, rgba(6, 9, 19, 0.85) 100%)',
-  'lava-lolegaon':   'linear-gradient(165deg, rgba(16, 185, 129, 0.22) 0%, rgba(6, 9, 19, 0.85) 100%)',
-  'lamahatta-takdah':'linear-gradient(165deg, rgba(217, 119, 6, 0.22) 0%, rgba(6, 9, 19, 0.85) 100%)',
-  'reshi-khola':     'linear-gradient(165deg, rgba(59, 130, 246, 0.22) 0%, rgba(6, 9, 19, 0.85) 100%)',
-  'darjeeling-zoo':  'linear-gradient(165deg, rgba(239, 68, 68, 0.22) 0%, rgba(6, 9, 19, 0.85) 100%)'
+  darjeeling:        'linear-gradient(180deg, rgba(245, 158, 11, 0.10) 0%, rgba(6, 9, 19, 0.88) 100%)',
+  gangtok:           'linear-gradient(180deg, rgba(56, 189, 248, 0.10) 0%, rgba(6, 9, 19, 0.88) 100%)',
+  bhutan:            'linear-gradient(180deg, rgba(244, 114, 182, 0.10) 0%, rgba(6, 9, 19, 0.88) 100%)',
+  nepal:             'linear-gradient(180deg, rgba(248, 113, 113, 0.10) 0%, rgba(6, 9, 19, 0.88) 100%)',
+  siliguri:          'linear-gradient(180deg, rgba(167, 139, 250, 0.10) 0%, rgba(6, 9, 19, 0.88) 100%)',
+  kalimpong:         'linear-gradient(180deg, rgba(45, 212, 191, 0.12) 0%, rgba(6, 9, 19, 0.88) 100%)',
+  kurseong:          'linear-gradient(180deg, rgba(132, 204, 22, 0.12) 0%, rgba(6, 9, 19, 0.88) 100%)',
+  mirik:             'linear-gradient(180deg, rgba(14, 165, 233, 0.14) 0%, rgba(6, 9, 19, 0.88) 100%)',
+  sittong:           'linear-gradient(180deg, rgba(251, 146, 60, 0.14) 0%, rgba(6, 9, 19, 0.88) 100%)',
+  'lava-lolegaon':   'linear-gradient(180deg, rgba(16, 185, 129, 0.14) 0%, rgba(6, 9, 19, 0.88) 100%)',
+  'lamahatta-takdah':'linear-gradient(180deg, rgba(217, 119, 6, 0.14) 0%, rgba(6, 9, 19, 0.88) 100%)',
+  'reshi-khola':     'linear-gradient(180deg, rgba(59, 130, 246, 0.14) 0%, rgba(6, 9, 19, 0.88) 100%)',
+  'darjeeling-zoo':  'linear-gradient(180deg, rgba(239, 68, 68, 0.14) 0%, rgba(6, 9, 19, 0.88) 100%)'
 };
 
-const defaultTint = 'linear-gradient(165deg, rgba(245, 158, 11, 0.16) 0%, rgba(6, 9, 19, 0.85) 100%)';
+const defaultTint = 'linear-gradient(180deg, rgba(245, 158, 11, 0.10) 0%, rgba(6, 9, 19, 0.88) 100%)';
 
-function cardBackground(dest) {
+function itemBackground(dest) {
   const tint = TINTS[dest.id] || defaultTint;
   return `${tint}, url(${dest.image})`;
 }
 
 export function SwipePackages() {
-  const [index, setIndex] = useState(0);
+  const [order, setOrder] = useState(() => destinations.map((_, i) => i));
   const [openDest, setOpenDest] = useState(null);
-  const deck = useMemo(() => destinations, []);
+  const touchRef = useRef({ start: 0, active: false });
 
-  const advance = useCallback(() => {
-    setIndex((i) => (i + 1) % deck.length);
-  }, [deck.length]);
+  const next = useCallback(() => {
+    setOrder((o) => [...o.slice(1), o[0]]);
+  }, []);
 
-  const handleLike = useCallback((dest) => {
-    setOpenDest(dest);
-    // Advance under the sheet so closing it shows the next card
-    setTimeout(advance, 220);
-  }, [advance]);
+  const prev = useCallback(() => {
+    setOrder((o) => [o[o.length - 1], ...o.slice(0, -1)]);
+  }, []);
 
-  const handlePass = useCallback(() => {
-    advance();
-  }, [advance]);
+  const items = order.map((idx) => destinations[idx]);
+  // Active card is the 2nd DOM child (matches the reference design)
+  const activeDest = items[1] || items[0];
 
-  // Render up to STACK_DEPTH cards. The active card is the LAST one in the
-  // children array so it sits on top (later siblings overlap earlier ones
-  // when they share absolute position).
-  const visible = [];
-  const count = Math.min(STACK_DEPTH, deck.length);
-  for (let i = count - 1; i >= 0; i -= 1) {
-    const dest = deck[(index + i) % deck.length];
-    visible.push({ dest, pos: i, key: `${index}-${i}-${dest.id}` });
-  }
-
-  const currentDest = deck[index];
-
-  return (
-    <div className="sw-root">
-      <header className="sw-header">
-        <span className="badge badge-brand"><i className="fa-solid fa-sparkles" /> Curated Corridors</span>
-        <h1 className="sw-title">Swipe to Explore</h1>
-        <p className="sw-sub">Drag right to see packages · Drag left to skip · Tap ⓘ for details</p>
-      </header>
-
-      <div className="sw-deck">
-        <AnimatePresence>
-          {visible.map(({ dest, pos, key }) => (
-            <Card
-              key={key}
-              dest={dest}
-              pos={pos}
-              isTop={pos === 0}
-              onLike={() => handleLike(dest)}
-              onPass={handlePass}
-            />
-          ))}
-        </AnimatePresence>
-
-        {/* Progress counter floats over the deck */}
-        <div className="sw-progress" aria-live="polite">
-          <span>{index + 1}</span>
-          <span className="sw-progress-sep">/</span>
-          <span>{deck.length}</span>
-        </div>
-      </div>
-
-      <div className="sw-actions" role="group" aria-label="Swipe actions">
-        <button
-          type="button"
-          className="sw-btn sw-btn-pass"
-          onClick={handlePass}
-          aria-label="Skip this destination"
-        >
-          <i className="fa-solid fa-xmark" aria-hidden="true" />
-        </button>
-        <button
-          type="button"
-          className="sw-btn sw-btn-info"
-          onClick={() => setOpenDest(currentDest)}
-          aria-label="View packages for this destination"
-        >
-          <i className="fa-solid fa-info" aria-hidden="true" />
-        </button>
-        <button
-          type="button"
-          className="sw-btn sw-btn-like"
-          onClick={() => handleLike(currentDest)}
-          aria-label="See packages for this destination"
-        >
-          <i className="fa-solid fa-heart" aria-hidden="true" />
-        </button>
-      </div>
-
-      <AnimatePresence>
-        {openDest && (
-          <BottomSheet dest={openDest} onClose={() => setOpenDest(null)} />
-        )}
-      </AnimatePresence>
-    </div>
-  );
-}
-
-function Card({ dest, pos, isTop, onLike, onPass }) {
-  const x = useMotionValue(0);
-  const rotate = useTransform(x, [-220, 0, 220], [-16, 0, 16]);
-  const likeOpacity = useTransform(x, [40, SWIPE_THRESHOLD], [0, 1]);
-  const passOpacity = useTransform(x, [-SWIPE_THRESHOLD, -40], [1, 0]);
-
-  const restingScale = 1 - pos * 0.045;
-  const restingY = pos * 14;
-
-  const handleDragEnd = (_, info) => {
-    if (info.offset.x > SWIPE_THRESHOLD || info.velocity.x > 600) {
-      onLike();
-    } else if (info.offset.x < -SWIPE_THRESHOLD || info.velocity.x < -600) {
-      onPass();
-    }
+  const onTouchStart = (e) => {
+    touchRef.current.start = e.touches[0].clientX;
+    touchRef.current.active = true;
+  };
+  const onTouchEnd = (e) => {
+    if (!touchRef.current.active) return;
+    const delta = e.changedTouches[0].clientX - touchRef.current.start;
+    touchRef.current.active = false;
+    if (delta < -50) next();
+    else if (delta > 50) prev();
   };
 
   return (
-    <motion.article
-      className="sw-card"
-      style={{
-        background: cardBackground(dest),
-        x: isTop ? x : 0,
-        rotate: isTop ? rotate : 0,
-        zIndex: 10 - pos
-      }}
-      drag={isTop ? 'x' : false}
-      dragConstraints={{ left: 0, right: 0 }}
-      dragElastic={0.7}
-      onDragEnd={handleDragEnd}
-      initial={{ scale: restingScale - 0.04, y: restingY + 12, opacity: 0 }}
-      animate={{ scale: restingScale, y: restingY, opacity: 1 }}
-      exit={{ x: 0, opacity: 0, scale: 0.94, transition: { duration: 0.25 } }}
-      transition={{ type: 'spring', damping: 22, stiffness: 220 }}
-    >
-      {isTop && (
-        <>
-          <motion.div className="sw-stamp sw-stamp-like" style={{ opacity: likeOpacity }}>
-            <i className="fa-solid fa-heart" /> View Packages
-          </motion.div>
-          <motion.div className="sw-stamp sw-stamp-pass" style={{ opacity: passOpacity }}>
-            <i className="fa-solid fa-xmark" /> Skip
-          </motion.div>
-        </>
-      )}
+    <div className="ps-root">
+      <header className="ps-header">
+        <span className="badge badge-brand">
+          <i className="fa-solid fa-sparkles" /> Curated Corridors
+        </span>
+        <h1 className="ps-title">Pick Your Mountain</h1>
+        <p className="ps-sub">Tap an arrow or swipe to flip through destinations. Book what you love.</p>
+      </header>
 
-      <div className="sw-card-content">
-        <div className="sw-card-chips">
-          {dest.permitRequired && (
-            <span className="sw-chip sw-chip-warn">
-              <i className="fa-solid fa-id-card" /> Permit
-            </span>
-          )}
-          <span className="sw-chip">
-            <i className="fa-solid fa-mountain" /> {dest.elevation}
-          </span>
+      <div
+        className="ps-stage"
+        onTouchStart={onTouchStart}
+        onTouchEnd={onTouchEnd}
+      >
+        <div className="ps-deck">
+          {items.map((dest) => (
+            <div
+              key={dest.id}
+              className="ps-item"
+              style={{ background: itemBackground(dest), backgroundSize: 'cover', backgroundPosition: 'center' }}
+            >
+              <div className="ps-content">
+                {dest.permitRequired && (
+                  <span className="ps-chip ps-chip-warn">
+                    <i className="fa-solid fa-id-card" /> Permit
+                  </span>
+                )}
+                <h2 className="ps-name">{dest.name}</h2>
+                <p className="ps-desc">{dest.tagline}</p>
+                <button
+                  type="button"
+                  className="ps-cta"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setOpenDest(dest);
+                  }}
+                >
+                  <span>Book This One</span>
+                  <i className="fa-solid fa-arrow-right" aria-hidden="true" />
+                </button>
+              </div>
+            </div>
+          ))}
         </div>
-        <h2 className="sw-card-name">{dest.name}</h2>
-        <p className="sw-card-tagline">{dest.tagline}</p>
-        <div className="sw-card-meta">
-          <span><i className="fa-solid fa-route" /> {dest.distanceFromBagdogra}</span>
-          <span><i className="fa-solid fa-clock" /> {dest.travelTimeFromBagdogra}</span>
+
+        <div className="ps-nav" role="group" aria-label="Slider navigation">
+          <button
+            type="button"
+            className="ps-btn ps-prev"
+            onClick={prev}
+            aria-label="Previous destination"
+          >
+            <i className="fa-solid fa-chevron-left" aria-hidden="true" />
+          </button>
+          <button
+            type="button"
+            className="ps-btn ps-next"
+            onClick={next}
+            aria-label="Next destination"
+          >
+            <i className="fa-solid fa-chevron-right" aria-hidden="true" />
+          </button>
         </div>
       </div>
-    </motion.article>
+
+      <div className="ps-counter" aria-live="polite">
+        <span className="ps-counter-cur">{(order[1] ?? order[0]) + 1}</span>
+        <span className="ps-counter-sep">of</span>
+        <span>{destinations.length}</span>
+      </div>
+
+      <AnimatePresence>
+        {openDest && <BottomSheet dest={openDest} onClose={() => setOpenDest(null)} />}
+      </AnimatePresence>
+    </div>
   );
 }
 
