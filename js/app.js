@@ -17,10 +17,12 @@ import { reactRoute } from './utils/react-mount.js';
 import { Discover } from './pages/react/Discover.jsx';
 import { RouteBuilder } from './pages/react/RouteBuilder.jsx';
 import { RouteQuote } from './pages/react/RouteQuote.jsx';
+import { SwipePackages } from './pages/react/SwipePackages.jsx';
 
 const DiscoverPage = reactRoute(Discover);
 const RouteBuilderPage = reactRoute(RouteBuilder);
 const RouteQuotePage = reactRoute(RouteQuote);
+const SwipePackagesPage = reactRoute(SwipePackages);
 
 // Animation Utilities
 import { initScrollReveal, initParallaxMouseMove } from './utils/animations.js';
@@ -51,7 +53,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const routes = [
     { path: '/', component: Home },
     { path: '/destinations/:id', component: DestinationDetail },
-    { path: '/packages', component: Packages },
+    { path: '/packages', component: SwipePackagesPage },
+    { path: '/packages/grid', component: Packages },
     { path: '/booking', component: Booking },
     { path: '/admin/bookings', component: AdminBookings },
     { path: '/discover', component: DiscoverPage },

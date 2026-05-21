@@ -3,6 +3,26 @@
    ========================================== */
 
 export const packages = [
+  /* --- Lamahatta · Takdah · Tinchuley Loop --- */
+  {
+    id: "lamahatta-takdah-tinchuley",
+    destinationId: "lamahatta-takdah",
+    name: "Lamahatta · Takdah · Tinchuley Loop",
+    duration: "5–6 Hours (Half Day)",
+    priceSedan: 2200,
+    priceSuv: 3200,
+    attractions: [
+      "Lamahatta Eco Park",
+      "Takdah Orchid Center",
+      "British Heritage Bungalows",
+      "Tinchuley Viewpoint",
+      "Peshok Tea Garden",
+      "Gumbadara Viewpoint"
+    ],
+    description: "A scenic loop through misty pine forests at Lamahatta Eco Park, colonial-era heritage bungalows and orchid greenhouses at Takdah, ending at the offbeat Tinchuley viewpoint for unobstructed Kanchenjunga panoramas.",
+    suvOnly: false,
+    restrictions: []
+  },
   /* --- Darjeeling Sightseeing --- */
   {
     id: "darjeeling-5-point",
