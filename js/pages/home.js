@@ -7,60 +7,16 @@ import { createElement } from 'react';
 import { destinations } from '../data/destinations.js';
 import { packages } from '../data/packages.js';
 import { vehicles } from '../data/vehicles.js';
-import { SearchBar } from '../components/search-bar.js';
 import { HillsHero } from '../components/react/HillsHero.jsx';
 
 export const Home = {
   render() {
     // Curate popular packages for homepage display
     const popularPackages = packages.filter(p => ["darjeeling-7-point", "gangtok-tsomgo-circuit", "gangtok-nathula-pass", "darjeeling-tiger-hill"].includes(p.id));
-    
-    // Autocomplete Search Components (HTML hooks)
-    this.fromSearch = new SearchBar("home-from-input", "home-from-dropdown", "from");
-    this.toSearch = new SearchBar("home-to-input", "home-to-dropdown", "to");
 
     return `
-      <!-- 1. Cinematic Hero — React + framer-motion 3-image carousel -->
+      <!-- 1. Cinematic Hero — React + framer-motion -->
       <div id="hills-hero-mount"></div>
-
-      <!-- 1b. Booking strip — overlaps hero bottom -->
-      <section class="hero-booking-strip">
-        <div class="container">
-          <div class="quick-booking-bar glass-panel">
-            <div class="booking-grid">
-              <div class="booking-field-col">
-                <label class="form-label"><i class="fa-solid fa-circle-dot text-brand"></i> Pick-up Location (Ride From)</label>
-                ${this.fromSearch.render()}
-              </div>
-              <div class="booking-divider">
-                <i class="fa-solid fa-arrow-right-left"></i>
-              </div>
-              <div class="booking-field-col">
-                <label class="form-label"><i class="fa-solid fa-map-location-dot text-brand"></i> Drop-off Location (Destination)</label>
-                ${this.toSearch.render()}
-              </div>
-              <div class="booking-field-col">
-                <label class="form-label"><i class="fa-solid fa-users text-brand"></i> Travelers</label>
-                <select id="home-passengers-select" class="input-glass" style="padding: 14px 18px; height: 52px; background: rgba(255, 255, 255, 0.04); border: 1.5px solid var(--glass-border); border-radius: var(--radius-md); color: var(--text-primary); font-family: var(--font-body); font-size: 0.95rem; cursor: pointer; outline: none; transition: all var(--transition-normal);">
-                  <option value="1" style="background: var(--bg-surface); color: var(--text-primary);">1 Person</option>
-                  <option value="2" selected style="background: var(--bg-surface); color: var(--text-primary);">2 People</option>
-                  <option value="3" style="background: var(--bg-surface); color: var(--text-primary);">3 People</option>
-                  <option value="4" style="background: var(--bg-surface); color: var(--text-primary);">4 People</option>
-                  <option value="5" style="background: var(--bg-surface); color: var(--text-primary);">5 People</option>
-                  <option value="6" style="background: var(--bg-surface); color: var(--text-primary);">6 People</option>
-                  <option value="7" style="background: var(--bg-surface); color: var(--text-primary);">7 People</option>
-                </select>
-              </div>
-              <div class="booking-action-col">
-                <button id="home-booking-search-btn" class="btn btn-primary btn-lg booking-search-btn">
-                  <span>Search Ride</span> <i class="fa-solid fa-taxi"></i>
-                </button>
-              </div>
-            </div>
-            <div id="quick-booking-warning" class="quick-booking-warning-msg"></div>
-          </div>
-        </div>
-      </section>
 
       <!-- 1b. Map-first "Build your route" promo (from Compass design) -->
       <section class="section-padding" style="padding-top: 60px; padding-bottom: 20px;">
@@ -315,75 +271,9 @@ export const Home = {
       }
     }
 
-    // 1. Initialize Autocompletes
-    this.fromSearch.init((item) => {
-      // Callback if needed
-    });
-    this.toSearch.init((item) => {
-      // Callback if needed
-    });
+    // Booking widget moved to the dedicated /booking page — hero "Book Now" links there.
 
-    // 2. Booking button handler
-    const searchBtn = document.getElementById("home-booking-search-btn");
-    const errorMsg = document.getElementById("quick-booking-warning");
-
-    if (searchBtn) {
-      searchBtn.addEventListener("click", () => {
-        try {
-          console.log("🏔️ [Home Search] Search Ride button clicked! Initiating terminal resolution...");
-          
-          // Debugging input bindings
-          if (!this.fromSearch || !this.toSearch) {
-            throw new Error("Autocomplete search bar instances are not initialized on the Home page object.");
-          }
-
-          const fromId = this.fromSearch.resolveInput();
-          const toId = this.toSearch.resolveInput();
-          
-          console.log(`🏔️ [Home Search] Terminal Resolution Results: fromId="${fromId}", toId="${toId}"`);
-
-          const passengersSelect = document.getElementById("home-passengers-select");
-          const passengers = passengersSelect ? passengersSelect.value : "2";
-
-          if (!fromId || !toId) {
-            console.warn("🏔️ [Home Search] Failed to resolve one or both terminal selections.", { fromId, toId });
-            if (errorMsg) {
-              errorMsg.innerText = "Please specify a valid Pick-up Location and Drop-off Location from the dropdown or matching terms.";
-              errorMsg.classList.add("visible");
-            }
-            return;
-          }
-
-          if (fromId === toId) {
-            console.warn("🏔️ [Home Search] Duplicate terminals selected:", fromId);
-            if (errorMsg) {
-              errorMsg.innerText = "Pick-up Location and Drop-off Location cannot be the same.";
-              errorMsg.classList.add("visible");
-            }
-            return;
-          }
-
-          if (errorMsg) {
-            errorMsg.classList.remove("visible");
-            errorMsg.innerText = "";
-          }
-
-          const destinationHash = `#/booking?from=${fromId}&to=${toId}&passengers=${passengers}`;
-          console.log(`🏔️ [Home Search] Routing successfully to: ${destinationHash}`);
-          
-          // Execute SPA navigation
-          window.location.hash = destinationHash;
-        } catch (err) {
-          console.error("🚨 [Home Search] Error caught in search ride click event:", err);
-          if (errorMsg) {
-            errorMsg.innerText = `An unexpected routing issue occurred: ${err.message}. Please check browser console.`;
-            errorMsg.classList.add("visible");
-          }
-        }
-      });
-    }
-
-    // 3. Swipable Destination Carousel Logic (Custom drag/touch handler)
+    // Swipable Destination Carousel Logic (Custom drag/touch handler)
     const track = document.querySelector(".carousel-track");
     const prevBtn = document.getElementById("carousel-prev");
     const nextBtn = document.getElementById("carousel-next");

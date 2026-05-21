@@ -2,8 +2,23 @@
    HILLS TOUR & TRAVELS — NAVBAR COMPONENT
    ========================================== */
 
+const LANGS = [
+  { code: 'en', label: 'English',  short: 'EN', flag: '🇬🇧' },
+  { code: 'hi', label: 'हिन्दी',     short: 'HI', flag: '🇮🇳' },
+  { code: 'bn', label: 'বাংলা',     short: 'BN', flag: '🇧🇩' },
+  { code: 'ne', label: 'नेपाली',    short: 'NE', flag: '🇳🇵' },
+  { code: 'zh', label: '中文',       short: 'ZH', flag: '🇨🇳' },
+  { code: 'th', label: 'ไทย',        short: 'TH', flag: '🇹🇭' }
+];
+
+function getInitialLang() {
+  if (typeof window === 'undefined') return 'en';
+  return window.localStorage.getItem('hh.lang') || 'en';
+}
+
 export const Navbar = {
   render() {
+    const cur = LANGS.find(l => l.code === getInitialLang()) || LANGS[0];
     return `
       <nav class="navbar animate-fade-in">
         <div class="container navbar-container">
@@ -26,12 +41,31 @@ export const Navbar = {
             <li><a href="#/booking" class="btn btn-primary btn-sm nav-cta">Book Taxi <i class="fa-solid fa-arrow-right"></i></a></li>
           </ul>
 
-          <!-- Mobile Hamburger Trigger -->
-          <button class="nav-hamburger" id="nav-hamburger-trigger" aria-label="Toggle Navigation">
-            <span class="hamburger-bar"></span>
-            <span class="hamburger-bar"></span>
-            <span class="hamburger-bar"></span>
-          </button>
+          <!-- Right cluster: language toggle + hamburger -->
+          <div class="navbar-right">
+            <div class="navbar-lang" id="navbar-lang">
+              <button type="button" class="navbar-lang-btn" id="navbar-lang-btn" aria-haspopup="listbox" aria-expanded="false" aria-label="Change language">
+                <i class="fa-solid fa-globe"></i>
+                <span class="navbar-lang-code" id="navbar-lang-code">${cur.short}</span>
+                <i class="fa-solid fa-chevron-down navbar-lang-caret"></i>
+              </button>
+              <ul class="navbar-lang-menu" id="navbar-lang-menu" role="listbox">
+                ${LANGS.map(l => `
+                  <li>
+                    <button type="button" role="option" data-lang="${l.code}" class="navbar-lang-item ${l.code === cur.code ? 'is-active' : ''}" aria-selected="${l.code === cur.code}">
+                      <span class="navbar-lang-flag" aria-hidden="true">${l.flag}</span>
+                      <span class="navbar-lang-name">${l.label}</span>
+                      ${l.code === cur.code ? '<i class="fa-solid fa-check navbar-lang-check" aria-hidden="true"></i>' : ''}
+                    </button>
+                  </li>
+                `).join('')}
+              </ul>
+            </div>
+
+            <button class="nav-hamburger" id="nav-hamburger-trigger" aria-label="Toggle Navigation">
+              <i class="fa-solid fa-bars"></i>
+            </button>
+          </div>
         </div>
 
         <!-- Mobile Slide-In Navigation Drawer -->
@@ -114,6 +148,70 @@ export const Navbar = {
 
     window.addEventListener("hashchange", updateActiveState);
     updateActiveState();
+
+    // ----- Language toggle -----
+    const langWrap = document.getElementById("navbar-lang");
+    const langBtn = document.getElementById("navbar-lang-btn");
+    const langMenu = document.getElementById("navbar-lang-menu");
+    const langCode = document.getElementById("navbar-lang-code");
+
+    const setLang = (code) => {
+      const l = LANGS.find(x => x.code === code) || LANGS[0];
+      window.localStorage.setItem("hh.lang", l.code);
+      document.documentElement.setAttribute("lang", l.code);
+      if (langCode) langCode.textContent = l.short;
+      langMenu.querySelectorAll(".navbar-lang-item").forEach(item => {
+        const active = item.getAttribute("data-lang") === l.code;
+        item.classList.toggle("is-active", active);
+        item.setAttribute("aria-selected", active ? "true" : "false");
+        const existingCheck = item.querySelector(".navbar-lang-check");
+        if (active && !existingCheck) {
+          item.insertAdjacentHTML("beforeend", '<i class="fa-solid fa-check navbar-lang-check" aria-hidden="true"></i>');
+        } else if (!active && existingCheck) {
+          existingCheck.remove();
+        }
+      });
+      window.dispatchEvent(new CustomEvent("hh:langchange", { detail: { lang: l.code } }));
+    };
+
+    const closeLangMenu = () => {
+      langWrap?.classList.remove("is-open");
+      langBtn?.setAttribute("aria-expanded", "false");
+    };
+
+    if (langBtn && langMenu && langWrap) {
+      langBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const isOpen = langWrap.classList.toggle("is-open");
+        langBtn.setAttribute("aria-expanded", isOpen ? "true" : "false");
+      });
+
+      langMenu.querySelectorAll(".navbar-lang-item").forEach(item => {
+        item.addEventListener("click", () => {
+          const code = item.getAttribute("data-lang");
+          if (code) setLang(code);
+          closeLangMenu();
+        });
+      });
+
+      // Close on outside click
+      document.addEventListener("click", (e) => {
+        if (!langWrap.contains(e.target)) closeLangMenu();
+      });
+
+      // Close on Escape
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") closeLangMenu();
+      });
+    }
+
+    // Sync UI if some other surface (e.g., legacy hero) flips the language
+    window.addEventListener("hh:langchange", (e) => {
+      const code = e.detail?.lang;
+      if (!code || !langCode) return;
+      const l = LANGS.find(x => x.code === code);
+      if (l) langCode.textContent = l.short;
+    });
 
     // Store listener references for cleanups
     this.scrollListener = handleScroll;
