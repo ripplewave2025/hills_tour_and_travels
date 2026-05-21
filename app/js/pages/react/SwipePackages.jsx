@@ -151,11 +151,6 @@ export function SwipePackages({ query }) {
               <i className="fa-solid fa-sparkles" /> {activeTab === 'experiences' ? 'Audience Tiers' : 'Corridor Explorer'}
             </span>
             <h1 className="ps-title">{activeTab === 'experiences' ? 'Experiences' : 'Destinations'}</h1>
-            <p className="ps-sub">
-              {activeTab === 'experiences'
-                ? 'Handcrafted tours optimized for specific traveler profiles.'
-                : 'Browse pristine geographic sightseeing circuits.'}
-            </p>
           </div>
 
           <div className="ps-tabs-container">

@@ -2239,13 +2239,13 @@ a, button, [role="button"], select, input {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 100px 16px 36px;
+  padding: 85px 16px 24px;
   overflow: hidden;
 }
 
 .ps-header {
   width: 100%;
-  margin-bottom: 30px;
+  margin-bottom: 12px;
 }
 
 .ps-header-main {
@@ -2325,8 +2325,8 @@ a, button, [role="button"], select, input {
 .ps-stage {
   position: relative;
   width: min(440px, 94vw);
-  height: 560px;
-  margin: 20px auto 70px;
+  height: 510px;
+  margin: 10px auto 60px;
   overflow: visible;
   touch-action: none;
 }
@@ -2912,13 +2912,13 @@ a, button, [role="button"], select, input {
 /* Responsive — tablets & phones */
 @media (max-width: 768px) {
   .ps-root {
-    padding: 88px 12px 28px;
+    padding: 74px 12px 20px;
   }
 
   .ps-header-main {
     flex-direction: column;
     align-items: stretch;
-    gap: 16px;
+    gap: 12px;
   }
 
   .ps-tabs-container {
@@ -2932,8 +2932,8 @@ a, button, [role="button"], select, input {
 
   .ps-stage {
     width: min(380px, 94vw);
-    height: 500px;
-    margin: 10px auto 80px;
+    height: 450px;
+    margin: 5px auto 65px;
     border-radius: 22px;
   }
 
@@ -3002,8 +3002,8 @@ a, button, [role="button"], select, input {
 @media (max-width: 420px) {
   .ps-stage {
     width: min(330px, 94vw);
-    height: 430px;
-    margin: 10px auto 70px;
+    height: 390px;
+    margin: 5px auto 60px;
   }
 
   .ps-content {
