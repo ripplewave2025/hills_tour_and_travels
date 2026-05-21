@@ -18,36 +18,7 @@ export const Home = {
       <!-- 1. Cinematic Hero — React + framer-motion -->
       <div id="hills-hero-mount"></div>
 
-      <!-- 1b. Map-first "Build your route" promo (from Compass design) -->
-      <section class="section-padding" style="padding-top: 60px; padding-bottom: 20px;">
-        <div class="container">
-          <a href="#/route" class="route-builder-promo glass-panel glass-panel-hover">
-            <div class="route-builder-promo-text">
-              <span class="badge badge-brand mb-1"><i class="fa-solid fa-map-location-dot"></i> New · Map-first</span>
-              <h2 class="route-builder-promo-title">Build your own Darjeeling route</h2>
-              <p class="route-builder-promo-sub">Tap pins on a live map — Tiger Hill, Batasia, Ghoom, Happy Valley, Peace Pagoda — to assemble a custom day-trip. See stops, distance and price update as you go.</p>
-              <span class="route-builder-promo-cta">Open the route builder <i class="fa-solid fa-arrow-right"></i></span>
-            </div>
-            <div class="route-builder-promo-mini" aria-hidden="true">
-              <svg viewBox="0 0 200 220" preserveAspectRatio="xMidYMid meet" width="100%" height="100%">
-                <defs>
-                  <linearGradient id="hrb-trail" x1="0" y1="0" x2="1" y2="1">
-                    <stop offset="0%" stop-color="#E6A729"/>
-                    <stop offset="100%" stop-color="rgba(230,167,41,0.2)"/>
-                  </linearGradient>
-                </defs>
-                <path d="M 178,30 Q 150,70 110,90 Q 70,108 60,150 Q 55,180 100,200" fill="none" stroke="url(#hrb-trail)" stroke-width="3" stroke-linecap="round" stroke-dasharray="6 5"/>
-                <g fill="#E6A729" stroke="#060913" stroke-width="2">
-                  <circle cx="178" cy="30" r="7"/>
-                  <circle cx="110" cy="90" r="7"/>
-                  <circle cx="60" cy="150" r="7"/>
-                  <circle cx="100" cy="200" r="7"/>
-                </g>
-              </svg>
-            </div>
-          </a>
-        </div>
-      </section>
+      <!-- Build-your-route promo intentionally removed from home; route page still lives at /#/route -->
 
       <!-- 2. Swipable Destination Deck -->
       <section class="section-padding overflow-hidden">
