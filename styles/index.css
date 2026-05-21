@@ -1618,10 +1618,34 @@ a, button, [role="button"], select, input {
   min-height: 88dvh;
   display: flex;
   flex-direction: column;
-  justify-content: flex-end;
   overflow: hidden;
   background: #060913;
   isolation: isolate;
+}
+
+/* Middle zone — vertically centered headline + pills */
+.hh-hero-mid {
+  position: relative;
+  z-index: 2;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 140px 24px 24px;
+  color: #f8fafc;
+}
+
+/* Foot — CTAs pinned to bottom */
+.hh-hero-foot {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 24px 36px;
 }
 
 .hh-hero-bg {
@@ -1672,6 +1696,8 @@ a, button, [role="button"], select, input {
   pointer-events: none;
 }
 
+/* Legacy single-zone wrapper (kept for any older surface that still
+   uses .hh-hero-content). New layout uses .hh-hero-mid + .hh-hero-foot. */
 .hh-hero-content {
   position: relative;
   z-index: 2;
@@ -1831,7 +1857,8 @@ a, button, [role="button"], select, input {
   display: inline-flex;
   align-items: center;
   gap: 10px;
-  padding: 7px 14px;
+  padding: 6px 14px;
+  max-width: calc(100vw - 32px);
   background: rgba(11, 15, 25, 0.6);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
@@ -1840,6 +1867,7 @@ a, button, [role="button"], select, input {
   font-family: var(--font-body);
   font-size: 0.78rem;
   color: rgba(248, 250, 252, 0.95);
+  text-align: center;
   white-space: nowrap;
 }
 
@@ -2108,15 +2136,29 @@ a, button, [role="button"], select, input {
     transform-origin: 50% 55%;
   }
 
+  .hh-hero-mid {
+    padding: 120px 20px 16px;
+  }
+
+  .hh-hero-foot {
+    padding: 0 20px 28px;
+  }
+
   .hh-hero-content {
     padding: 24px 20px 32px;
   }
 
   .hh-trust-badge {
-    top: 84px;
-    padding: 6px 12px;
-    font-size: 0.72rem;
-    gap: 8px;
+    top: 76px;
+    padding: 5px 11px;
+    font-size: 0.68rem;
+    gap: 7px;
+    max-width: calc(100vw - 24px);
+  }
+
+  .hh-stars {
+    font-size: 0.62rem;
+    letter-spacing: 0.5px;
   }
 
   .hh-stars {

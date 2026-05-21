@@ -14,7 +14,7 @@ import heroImg from '../../../images/Hero_images_for_mobile/Tiger_hill_hero_mobi
 
 const T = {
   en: {
-    trust: 'Trusted by 850+ travelers',
+    trust: '850+ travelers',
     explore: 'Explore',
     withUs: 'with us.',
     pills: ['Premium Fleet', 'Local Drivers', 'Curated Tours', 'Door-to-Door'],
@@ -22,7 +22,7 @@ const T = {
     explorePkgs: 'Explore Packages'
   },
   hi: {
-    trust: '850+ यात्रियों का भरोसा',
+    trust: '850+ यात्री',
     explore: 'खोजें',
     withUs: 'हमारे साथ।',
     pills: ['प्रीमियम बेड़ा', 'स्थानीय ड्राइवर', 'क्यूरेटेड टूर', 'घर तक पिकअप'],
@@ -30,7 +30,7 @@ const T = {
     explorePkgs: 'पैकेज देखें'
   },
   bn: {
-    trust: '৮৫০+ পর্যটকের আস্থা',
+    trust: '৮৫০+ পর্যটক',
     explore: 'আবিষ্কার করুন',
     withUs: 'আমাদের সাথে।',
     pills: ['প্রিমিয়াম গাড়ি', 'স্থানীয় চালক', 'কিউরেটেড ট্যুর', 'দ্বার-থেকে-দ্বার'],
@@ -38,7 +38,7 @@ const T = {
     explorePkgs: 'প্যাকেজ দেখুন'
   },
   ne: {
-    trust: '८५०+ यात्रुहरूको भरोसा',
+    trust: '८५०+ यात्रु',
     explore: 'अन्वेषण गर्नुहोस्',
     withUs: 'हामीसँग।',
     pills: ['प्रिमियम गाडी', 'स्थानीय चालक', 'क्युरेटेड टुर', 'ढोका-देखि-ढोका'],
@@ -46,7 +46,7 @@ const T = {
     explorePkgs: 'प्याकेजहरू हेर्नुहोस्'
   },
   zh: {
-    trust: '850+ 位旅客的信赖之选',
+    trust: '850+ 位旅客',
     explore: '探索',
     withUs: '与我们同行。',
     pills: ['高端车队', '本地司机', '精选行程', '门到门接送'],
@@ -54,7 +54,7 @@ const T = {
     explorePkgs: '查看套餐'
   },
   th: {
-    trust: 'นักเดินทางกว่า 850+ คนไว้วางใจ',
+    trust: '850+ นักเดินทาง',
     explore: 'สำรวจ',
     withUs: 'ไปกับเรา',
     pills: ['รถพรีเมียม', 'คนขับท้องถิ่น', 'ทัวร์คัดสรร', 'รับส่งถึงที่'],
@@ -127,8 +127,8 @@ export function HillsHero() {
         </span>
       </motion.div>
 
-      {/* Foreground content — bottom-anchored */}
-      <div className="hh-hero-content">
+      {/* Middle zone — vertically centered headline + pills */}
+      <div className="hh-hero-mid">
         <motion.h1
           key={`hl-${lang}`}
           className="hh-headline"
@@ -183,7 +183,10 @@ export function HillsHero() {
             </motion.span>
           ))}
         </motion.div>
+      </div>
 
+      {/* Foot — CTAs pinned to the bottom */}
+      <div className="hh-hero-foot">
         <motion.div
           key={`cta-${lang}`}
           className="hh-cta-row"
