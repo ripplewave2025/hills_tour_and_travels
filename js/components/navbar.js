@@ -22,6 +22,7 @@ export const Navbar = {
           <ul class="nav-links">
             <li><a href="#/" class="nav-link" id="nav-home">Home</a></li>
             <li><a href="#/packages" class="nav-link" id="nav-packages">Tour Packages</a></li>
+            <li><a href="#/route" class="nav-link" id="nav-route">Build a Route</a></li>
             <li><a href="#/booking" class="btn btn-primary btn-sm nav-cta">Book Taxi <i class="fa-solid fa-arrow-right"></i></a></li>
           </ul>
 
@@ -45,6 +46,7 @@ export const Navbar = {
           <ul class="drawer-links">
             <li><a href="#/" class="drawer-link" id="drawer-home"><i class="fa-solid fa-house"></i> Home</a></li>
             <li><a href="#/packages" class="drawer-link" id="drawer-packages"><i class="fa-solid fa-route"></i> Tour Packages</a></li>
+            <li><a href="#/route" class="drawer-link" id="drawer-route"><i class="fa-solid fa-map-location-dot"></i> Build a Route</a></li>
             <li style="margin-top: 20px;">
               <a href="#/booking" class="btn btn-primary nav-cta-mobile"><i class="fa-solid fa-taxi"></i> Book Ride Now</a>
             </li>
@@ -104,6 +106,9 @@ export const Navbar = {
       } else if (hash.startsWith("#/packages")) {
         document.getElementById("nav-packages")?.classList.add("active");
         document.getElementById("drawer-packages")?.classList.add("active");
+      } else if (hash.startsWith("#/route") || hash.startsWith("#/discover")) {
+        document.getElementById("nav-route")?.classList.add("active");
+        document.getElementById("drawer-route")?.classList.add("active");
       }
     };
 

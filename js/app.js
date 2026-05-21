@@ -15,8 +15,12 @@ import { Booking } from './pages/booking.js';
 import { AdminBookings } from './pages/admin-bookings.js';
 import { reactRoute } from './utils/react-mount.js';
 import { Discover } from './pages/react/Discover.jsx';
+import { RouteBuilder } from './pages/react/RouteBuilder.jsx';
+import { RouteQuote } from './pages/react/RouteQuote.jsx';
 
 const DiscoverPage = reactRoute(Discover);
+const RouteBuilderPage = reactRoute(RouteBuilder);
+const RouteQuotePage = reactRoute(RouteQuote);
 
 // Animation Utilities
 import { initScrollReveal, initParallaxMouseMove } from './utils/animations.js';
@@ -27,20 +31,21 @@ document.addEventListener('DOMContentLoaded', () => {
   const footerMount = document.getElementById('footer-mount');
   const fabMount = document.getElementById('fab-mount');
 
-  if (navbarMount) {
-    navbarMount.innerHTML = Navbar.render();
-    Navbar.init();
-  }
+  // Each shell mount is isolated so a single failure can't kill the whole
+  // page (which would otherwise make every link/button feel "dead").
+  const safeMount = (label, mount, comp) => {
+    if (!mount) return;
+    try {
+      mount.innerHTML = comp.render();
+      if (comp.init) comp.init();
+    } catch (err) {
+      console.error(`[shell] Failed to mount ${label}:`, err);
+    }
+  };
 
-  if (footerMount) {
-    footerMount.innerHTML = Footer.render();
-    Footer.init();
-  }
-
-  if (fabMount) {
-    fabMount.innerHTML = WhatsAppFab.render();
-    WhatsAppFab.init();
-  }
+  safeMount('navbar', navbarMount, Navbar);
+  safeMount('footer', footerMount, Footer);
+  safeMount('fab', fabMount, WhatsAppFab);
 
   // 2. Define SPA Router Mapping
   const routes = [
@@ -49,11 +54,14 @@ document.addEventListener('DOMContentLoaded', () => {
     { path: '/packages', component: Packages },
     { path: '/booking', component: Booking },
     { path: '/admin/bookings', component: AdminBookings },
-    { path: '/discover', component: DiscoverPage }
+    { path: '/discover', component: DiscoverPage },
+    { path: '/route', component: RouteBuilderPage },
+    { path: '/route/quote', component: RouteQuotePage }
   ];
 
-  // Initialize Router
+  // Initialize Router (self-initializes on construction and hashchange)
   const router = new Router(routes, 'content-mount');
+  void router;
 
   // 3. Global Interactive Animations & Parallax binds
   let parallaxDestroyer = null;

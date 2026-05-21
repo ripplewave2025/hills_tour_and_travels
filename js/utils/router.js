@@ -83,9 +83,10 @@ export class Router {
   }
 
   async executeRoute(route, params, query) {
-    // Call cleanup on existing page
-    if (this.currentRoute && this.currentRoute.component.destroy) {
-      this.currentRoute.component.destroy();
+    // Call cleanup on existing page. currentRoute is { route, params, query },
+    // so the component lives at currentRoute.route.component (not .component).
+    if (this.currentRoute && this.currentRoute.route.component && this.currentRoute.route.component.destroy) {
+      this.currentRoute.route.component.destroy();
     }
 
     this.currentRoute = { route, params, query };

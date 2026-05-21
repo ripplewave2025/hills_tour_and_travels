@@ -63,7 +63,7 @@ export const Footer = {
               </li>
               <li>
                 <i class="fa-solid fa-phone text-brand"></i>
-                <a href="tel:+919876543210">+91 98765 43210</a>
+                <a href="tel:+919907219843">+91 99072 19843</a>
               </li>
               <li>
                 <i class="fa-solid fa-envelope text-brand"></i>

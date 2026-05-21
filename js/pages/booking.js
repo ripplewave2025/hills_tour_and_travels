@@ -43,6 +43,10 @@ export const Booking = {
       documents: { photo: null, idScan: null }
     };
 
+    // Tracks whether the traveller picked a vehicle by hand. Until they do,
+    // we keep auto-matching the vehicle to the passenger count.
+    this.vehicleManuallyChosen = false;
+
     // Instantiate Search Components
     this.fromSearch = new SearchBar("booking-from-input", "booking-from-dropdown", "from");
     this.toSearch = new SearchBar("booking-to-input", "booking-to-dropdown", "to");
@@ -125,6 +129,9 @@ export const Booking = {
       this.toSearch.setValue(this.state.to, getTerminalName(this.state.to));
     }
 
+    // Set the best-fit vehicle for the current group size before first render
+    this.applyVehicleRecommendation();
+
     // Initialize display panels
     this.updateStepView();
     this.updateSummary();
@@ -157,6 +164,48 @@ export const Booking = {
     } else if (this.currentStep === 5) {
       this.renderStep5(panel);
     }
+  },
+
+  // Is this route inside a high-altitude permit zone (SUV-only)?
+  isPermitRoute() {
+    const matchedRoute = findRouteSymmetric(this.state.from, this.state.to);
+    return !!(matchedRoute?.permitRequired
+      || (this.state.packageId && (this.state.packageId.includes("tsomgo")
+        || this.state.packageId.includes("nathula")
+        || this.state.packageId.includes("north-expedition"))));
+  },
+
+  // Recommend the smallest comfortable vehicle for the group size.
+  // Permit zones legally require a rugged SUV regardless of group size.
+  recommendVehicleId(passengers, isPermitRequired) {
+    if (isPermitRequired) return "suv-rugged";
+    const p = passengers || 1;
+    if (p <= 4) return "sedan";
+    if (p <= 6) return "muv-mid";
+    return "suv-rugged";
+  },
+
+  // Apply the auto-recommendation unless the traveller chose a vehicle by hand.
+  applyVehicleRecommendation() {
+    const isPermit = this.isPermitRoute();
+    // Safety: permit zones are SUV-only — correct even a manual non-SUV pick.
+    if (isPermit && !String(this.state.vehicleId).startsWith("suv")) {
+      this.state.vehicleId = "suv-rugged";
+      return;
+    }
+    if (this.vehicleManuallyChosen) return;
+    this.state.vehicleId = this.recommendVehicleId(this.state.passengers, isPermit);
+  },
+
+  // Shared step-1 validation used by both "Book Now" and "Customize".
+  validateStep1() {
+    const err = document.getElementById("step1-error");
+    const fail = (msg) => { if (err) { err.innerText = msg; err.style.display = "block"; } return false; };
+    if (!this.state.from || !this.state.to) return fail("Please specify a valid Pick-up Location and Drop-off Location.");
+    if (this.state.from === this.state.to) return fail("Pick-up Location and Drop-off Location cannot be the same.");
+    if (!this.state.date) return fail("Please specify a valid departure date.");
+    if (err) err.style.display = "none";
+    return true;
   },
 
   // STEP 1: ROUTE SETUP HTML & BINDINGS
@@ -218,9 +267,15 @@ export const Booking = {
 
         <div id="step1-error" style="color: var(--color-danger); font-size: 0.9rem; margin-bottom: 20px; display: none;"></div>
 
-        <div class="flex-end" style="border-top: 1px solid var(--glass-border); padding-top: 24px;">
-          <button class="btn btn-primary" id="step1-next-btn">
-            <span>Choose Fleet Tier</span> <i class="fa-solid fa-chevron-right"></i>
+        <div style="border-top: 1px solid var(--glass-border); padding-top: 24px;">
+          <button class="btn btn-primary btn-lg w-100" id="step1-booknow-btn" style="font-size: 1.1rem; padding: 16px; box-shadow: 0 8px 24px rgba(245, 158, 11, 0.3);">
+            <i class="fa-solid fa-bolt"></i> <span>Book Now</span> <i class="fa-solid fa-arrow-right"></i>
+          </button>
+          <p style="text-align: center; font-size: 0.82rem; color: var(--text-muted); margin: 12px 0 16px 0;">
+            We'll auto-match the right vehicle for <strong id="booknow-pax-count">${this.state.passengers}</strong> traveler${this.state.passengers > 1 ? 's' : ''} — you can still change it on the next step.
+          </p>
+          <button class="btn btn-secondary w-100" id="step1-next-btn">
+            <i class="fa-solid fa-sliders"></i> <span>Customize vehicle &amp; add-ons</span>
           </button>
         </div>
       </div>
@@ -254,6 +309,10 @@ export const Booking = {
     });
     document.getElementById("step1-passengers").addEventListener("change", (e) => {
       this.state.passengers = parseInt(e.target.value);
+      // Re-match the vehicle to the new group size (unless chosen by hand)
+      this.applyVehicleRecommendation();
+      const paxLabel = document.getElementById("booknow-pax-count");
+      if (paxLabel) paxLabel.innerText = this.state.passengers;
       this.updateSummary();
     });
     document.getElementById("step1-days").addEventListener("change", (e) => {
@@ -261,26 +320,17 @@ export const Booking = {
       this.updateSummary();
     });
 
-    // Next Step Navigation Click handler
-    document.getElementById("step1-next-btn").addEventListener("click", () => {
-      const err = document.getElementById("step1-error");
-      if (!this.state.from || !this.state.to) {
-        err.innerText = "Please specify a valid Pick-up Location and Drop-off Location.";
-        err.style.display = "block";
-        return;
-      }
-      if (this.state.from === this.state.to) {
-        err.innerText = "Pick-up Location and Drop-off Location cannot be the same.";
-        err.style.display = "block";
-        return;
-      }
-      if (!this.state.date) {
-        err.innerText = "Please specify a valid departure date.";
-        err.style.display = "block";
-        return;
-      }
+    // PRIORITY CTA — "Book Now": auto-match vehicle, jump straight to checkout.
+    document.getElementById("step1-booknow-btn").addEventListener("click", () => {
+      if (!this.validateStep1()) return;
+      this.applyVehicleRecommendation(); // ensure best-fit vehicle is set
+      this.currentStep = 4;              // skip fleet + add-ons for speed
+      this.updateStepView();
+    });
 
-      err.style.display = "none";
+    // Secondary path — "Customize": step through fleet + add-ons.
+    document.getElementById("step1-next-btn").addEventListener("click", () => {
+      if (!this.validateStep1()) return;
       this.currentStep = 2;
       this.updateStepView();
     });
@@ -300,6 +350,9 @@ export const Booking = {
       return { ...vh, isDisallowed };
     });
 
+    // Best-fit vehicle for the current group size (highlighted, not forced)
+    const recommendedId = this.recommendVehicleId(this.state.passengers, isPermitRequired);
+
     panel.innerHTML = `
       <div class="animate-fade-in">
         <h2 style="font-size: 1.75rem; margin-bottom: 8px;"><i class="fa-solid fa-car-rear text-brand"></i> Mountain Fleet Selection</h2>
@@ -318,10 +371,11 @@ export const Booking = {
               <div class="fleet-select-image" style="background-image: url('${vh.image}');"></div>
               <div class="fleet-select-details">
                 <div class="flex-between">
-                  <h3 style="font-size: 1.2rem;">${vh.name}</h3>
+                  <h3 style="font-size: 1.2rem;">${vh.name} ${(vh.id === recommendedId && !vh.isDisallowed) ? `<span style="display:inline-block; vertical-align:middle; margin-left:6px; font-size:0.65rem; font-weight:700; letter-spacing:0.04em; text-transform:uppercase; color:#060913; background:var(--brand-color); padding:3px 8px; border-radius:999px;"><i class="fa-solid fa-star"></i> Recommended</span>` : ''}</h3>
                   <span class="fleet-select-multiplier">₹${Math.round(vh.baseRatePerKm)}/km</span>
                 </div>
                 <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 4px;">Models: ${vh.models.join(", ")}</p>
+                ${(vh.id === recommendedId && !vh.isDisallowed) ? `<p style="font-size: 0.8rem; color: var(--brand-color); margin-top: 4px;"><i class="fa-solid fa-circle-check"></i> Best fit for ${this.state.passengers} traveler${this.state.passengers > 1 ? 's' : ''} — pick a larger vehicle if you have extra luggage.</p>` : ''}
                 <div class="fleet-select-meta flex" style="margin-top: 12px; gap: 16px; font-size: 0.8rem; color: var(--text-secondary);">
                   <span><i class="fa-solid fa-users text-brand"></i> ${vh.capacity}</span>
                   <span><i class="fa-solid fa-suitcase text-brand"></i> ${vh.luggage}</span>
@@ -348,6 +402,7 @@ export const Booking = {
         panel.querySelectorAll(".fleet-select-card").forEach(c => c.classList.remove("selected"));
         el.classList.add("selected");
         this.state.vehicleId = el.getAttribute("data-id");
+        this.vehicleManuallyChosen = true; // stop auto-matching once user picks
         this.updateSummary();
       });
     });
@@ -676,7 +731,7 @@ export const Booking = {
       const toName = getTerminalName(this.state.to);
       const msg = `*HILLS TOUR & TRAVELS VOUCHER*%0A------------------------------%0A*Reference ID:* ${bookingId}%0A*Customer:* ${this.state.userDetails.name}%0A*Route:* ${fromName} to ${toName}%0A*Date/Time:* ${this.state.date} @ ${this.state.time}%0A*Vehicle:* ${vehicles.find(v => v.id === this.state.vehicleId)?.name}%0A*Paid Amount:* INR ${summary.total}/-%0A------------------------------%0A*Permits Status:* Pending Approval (Voter ID Verified)`;
       
-      const url = `https://wa.me/919876543210?text=${msg}`;
+      const url = `https://wa.me/919907219843?text=${msg}`;
       window.open(url, "_blank");
     });
   },

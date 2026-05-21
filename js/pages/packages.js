@@ -193,7 +193,7 @@ export const Packages = {
                   <span class="pkg-price-lbl" style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase;">Pricing</span>
                   <div style="font-family: var(--font-mono); font-size: 1.1rem; font-weight: 700; color: var(--brand-color); display: flex; align-items: center; gap: 6px;"><i class="fa-solid fa-bell" style="font-size: 0.85rem;"></i> Enquire for Pricing</div>
                 </div>
-                <a href="https://wa.me/919876543210?text=${encodeURIComponent('Hi! I\'m interested in the upcoming "' + pkg.name + '" sightseeing package. Could you share pricing and availability details?')}" target="_blank" class="btn btn-primary" style="padding: 10px 24px; background: linear-gradient(135deg, #25d366, #128c7e);">
+                <a href="https://wa.me/919907219843?text=${encodeURIComponent('Hi! I\'m interested in the upcoming "' + pkg.name + '" sightseeing package. Could you share pricing and availability details?')}" target="_blank" class="btn btn-primary" style="padding: 10px 24px; background: linear-gradient(135deg, #25d366, #128c7e);">
                   <i class="fa-brands fa-whatsapp" style="font-size: 1rem;"></i> Enquire Now
                 </a>
               ` : `

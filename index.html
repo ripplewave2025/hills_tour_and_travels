@@ -7,19 +7,74 @@
   <meta name="keywords" content="Darjeeling taxi, Gangtok taxi, Sikkim permits, Bagdogra to Gangtok car, Nathula pass taxi, Bhutan tour car, Nepal border taxi, premium car rental siliguri">
   <meta name="author" content="Hills Tour & Travels">
   
+  <link rel="canonical" href="https://www.hillstourandtravel.com/">
+
   <!-- Open Graph / Facebook -->
   <meta property="og:type" content="website">
-  <meta property="og:url" content="https://hillstourtravels.com/">
+  <meta property="og:url" content="https://www.hillstourandtravel.com/">
   <meta property="og:title" content="Hills Tour & Travels | Instant Taxi & Premium Sightseeing">
   <meta property="og:description" content="Frictionless, instant taxi booking & custom sightseeing across the Eastern Himalayas. Best rates, verified drivers, 100% permit handling guaranteed.">
-  <meta property="og:image" content="/assets/destinations/darjeeling.jpg">
+  <meta property="og:image" content="https://images.unsplash.com/photo-1544735716-392fe2489ffa?auto=format&fit=crop&q=80&w=1200">
+  <meta property="og:site_name" content="Hills Tour & Travels">
 
   <!-- Twitter -->
   <meta property="twitter:card" content="summary_large_image">
   <meta property="twitter:title" content="Hills Tour & Travels | Premium Himalayan Mobility">
   <meta property="twitter:description" content="Book an SUV or luxury sedan for your Darjeeling or Sikkim tour in 30 seconds. Automatic permit processing, no syndicate overcharging.">
+  <meta property="twitter:image" content="https://images.unsplash.com/photo-1544735716-392fe2489ffa?auto=format&fit=crop&q=80&w=1200">
 
   <title>Hills Tour & Travels | Premium Instant Taxi & Sightseeing</title>
+
+  <!-- Local Business Structured Data (helps Google show rating & contact) -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "TravelAgency",
+    "name": "Hills Tour & Travels",
+    "image": "https://images.unsplash.com/photo-1544735716-392fe2489ffa?auto=format&fit=crop&q=80&w=1200",
+    "description": "Premium instant taxi booking and curated sightseeing tours across Darjeeling, Gangtok, Sikkim, Nepal, and Bhutan.",
+    "url": "https://www.hillstourandtravel.com/",
+    "address": {
+      "@type": "PostalAddress",
+      "streetAddress": "Phulbari",
+      "addressLocality": "Darjeeling",
+      "addressRegion": "West Bengal",
+      "postalCode": "734101",
+      "addressCountry": "IN"
+    },
+    "areaServed": ["Darjeeling", "Gangtok", "Sikkim", "Kalimpong", "Kurseong", "Mirik", "Nepal", "Bhutan"],
+    "aggregateRating": {
+      "@type": "AggregateRating",
+      "ratingValue": "4.9",
+      "reviewCount": "24"
+    }
+  }
+  </script>
+
+  <!-- Global runtime error reporter: surfaces uncaught errors instead of failing silently -->
+  <script>
+    (function () {
+      function showError(msg) {
+        try {
+          var existing = document.getElementById('global-error-banner');
+          if (existing) return;
+          var bar = document.createElement('div');
+          bar.id = 'global-error-banner';
+          bar.style.cssText = 'position:fixed;left:0;right:0;bottom:0;z-index:99999;background:#7f1d1d;color:#fff;font:13px/1.4 system-ui,sans-serif;padding:10px 44px 10px 14px;box-shadow:0 -2px 12px rgba(0,0,0,.4)';
+          bar.textContent = 'A script error occurred: ' + msg + ' — please reload. (Tap to dismiss)';
+          bar.addEventListener('click', function () { bar.remove(); });
+          (document.body || document.documentElement).appendChild(bar);
+        } catch (e) {}
+      }
+      window.addEventListener('error', function (e) {
+        showError((e && e.message) ? e.message : 'unknown error');
+      });
+      window.addEventListener('unhandledrejection', function (e) {
+        var r = e && e.reason;
+        showError((r && r.message) ? r.message : String(r));
+      });
+    })();
+  </script>
 
   <!-- Google Fonts — async to avoid render-blocking -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
