@@ -109,11 +109,18 @@ export class Router {
       
       if (this.contentMount) {
         this.contentMount.innerHTML = content;
-        
+
         // Execute initialization actions (like event bindings, map loaders, observers)
         if (route.component.init) {
           route.component.init(params, query);
         }
+
+        // Translate this freshly-rendered page into the current language.
+        // Any element carrying a data-i18n key is swapped automatically.
+        try {
+          const { applyTranslations } = await import('./i18n.js');
+          applyTranslations(this.contentMount);
+        } catch (e) { /* i18n optional — never block rendering */ }
       }
     } catch (error) {
       console.error("Error executing route:", error);

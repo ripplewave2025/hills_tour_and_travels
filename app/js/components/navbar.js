@@ -2,6 +2,8 @@
    HILLS TOUR & TRAVELS — NAVBAR COMPONENT
    ========================================== */
 
+import { initI18n } from '../utils/i18n.js';
+
 const LANGS = [
   { code: 'en', label: 'English',  short: 'EN', flag: '🇬🇧' },
   { code: 'hi', label: 'हिन्दी',     short: 'HI', flag: '🇮🇳' },
@@ -35,12 +37,12 @@ export const Navbar = {
 
           <!-- Desktop Navigation Links -->
           <ul class="nav-links">
-            <li><a href="#/" class="nav-link" id="nav-home">Home</a></li>
-            <li><a href="#/packages" class="nav-link" id="nav-packages">Tour Packages</a></li>
-            <li><a href="#/packages?tab=destinations" class="nav-link" id="nav-destinations">Destinations</a></li>
-            <li><a href="#/packages?tab=experiences" class="nav-link" id="nav-experiences">Experiences</a></li>
-            <li><a href="#/route" class="nav-link" id="nav-route">Build a Route</a></li>
-            <li><a href="#/booking" class="btn btn-primary btn-sm nav-cta">Book Taxi <i class="fa-solid fa-arrow-right"></i></a></li>
+            <li><a href="#/" class="nav-link" id="nav-home" data-i18n="nav.home">Home</a></li>
+            <li><a href="#/packages" class="nav-link" id="nav-packages" data-i18n="nav.packages">Tour Packages</a></li>
+            <li><a href="#/packages?tab=destinations" class="nav-link" id="nav-destinations" data-i18n="nav.destinations">Destinations</a></li>
+            <li><a href="#/packages?tab=experiences" class="nav-link" id="nav-experiences" data-i18n="nav.experiences">Experiences</a></li>
+            <li><a href="#/about" class="nav-link" id="nav-about" data-i18n="nav.about">About</a></li>
+            <li><a href="#/booking" class="btn btn-primary btn-sm nav-cta"><span data-i18n="nav.bookTaxi">Book Taxi</span> <i class="fa-solid fa-arrow-right"></i></a></li>
           </ul>
 
           <!-- Right cluster: language toggle + hamburger -->
@@ -81,13 +83,14 @@ export const Navbar = {
           </div>
           
           <ul class="drawer-links">
-            <li><a href="#/" class="drawer-link" id="drawer-home"><i class="fa-solid fa-house"></i> Home</a></li>
-            <li><a href="#/packages" class="drawer-link" id="drawer-packages"><i class="fa-solid fa-boxes-packing"></i> Tour Packages</a></li>
-            <li><a href="#/packages?tab=destinations" class="drawer-link" id="drawer-destinations"><i class="fa-solid fa-map-location-dot"></i> Destinations</a></li>
-            <li><a href="#/packages?tab=experiences" class="drawer-link" id="drawer-experiences"><i class="fa-solid fa-sparkles"></i> Experiences</a></li>
-            <li><a href="#/route" class="drawer-link" id="drawer-route"><i class="fa-solid fa-compass-drafting"></i> Build a Route</a></li>
+            <li><a href="#/" class="drawer-link" id="drawer-home"><i class="fa-solid fa-house"></i> <span data-i18n="nav.home">Home</span></a></li>
+            <li><a href="#/packages" class="drawer-link" id="drawer-packages"><i class="fa-solid fa-boxes-packing"></i> <span data-i18n="nav.packages">Tour Packages</span></a></li>
+            <li><a href="#/packages?tab=destinations" class="drawer-link" id="drawer-destinations"><i class="fa-solid fa-map-location-dot"></i> <span data-i18n="nav.destinations">Destinations</span></a></li>
+            <li><a href="#/packages?tab=experiences" class="drawer-link" id="drawer-experiences"><i class="fa-solid fa-sparkles"></i> <span data-i18n="nav.experiences">Experiences</span></a></li>
+            <li><a href="#/route" class="drawer-link" id="drawer-route"><i class="fa-solid fa-compass-drafting"></i> <span data-i18n="nav.route">Build a Route</span></a></li>
+            <li><a href="#/about" class="drawer-link" id="drawer-about"><i class="fa-solid fa-mountain-sun"></i> <span data-i18n="nav.about">About Us</span></a></li>
             <li style="margin-top: 20px;">
-              <a href="#/booking" class="btn btn-primary nav-cta-mobile"><i class="fa-solid fa-taxi"></i> Book Ride Now</a>
+              <a href="#/booking" class="btn btn-primary nav-cta-mobile"><i class="fa-solid fa-taxi"></i> <span data-i18n="nav.bookRide">Book Ride Now</span></a>
             </li>
           </ul>
         </div>
@@ -225,6 +228,9 @@ export const Navbar = {
       const l = LANGS.find(x => x.code === code);
       if (l) langCode.textContent = l.short;
     });
+
+    // Translate the shell now, and re-translate on every language change
+    initI18n();
 
     // Store listener references for cleanups
     this.scrollListener = handleScroll;

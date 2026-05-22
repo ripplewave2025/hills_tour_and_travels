@@ -2,6 +2,10 @@
    HILLS TOUR & TRAVELS — DESTINATION DATA
    ========================================== */
 
+// Real photographs taken by the owner (processed & hashed by Vite)
+import darjeelingReal from '../../images/tiger_hill_view.jpg';
+import darjeelingNight from '../../images/darjeeling_at_nigh.jpg';
+
 export const destinations = [
   {
     id: "darjeeling",
@@ -12,7 +16,7 @@ export const destinations = [
     permitRequired: false,
     distanceFromBagdogra: "68 km",
     travelTimeFromBagdogra: "2.5–3 hours",
-    image: "https://images.unsplash.com/photo-1544735716-392fe2489ffa?auto=format&fit=crop&q=80&w=1200",
+    image: darjeelingReal,
     description: "Nestled in the foothills of the snow-clad Himalayas, Darjeeling is world-famous for its aromatic tea gardens, the legendary Toy Train (UNESCO World Heritage Site), and majestic views of Mt. Kanchenjunga.",
     highlights: ["Tiger Hill Sunrise", "Batasia Loop", "Himalayan Mountaineering Institute", "Padmaja Naidu Zoo", "Darjeeling Ropeway"],
     alert: null
@@ -194,7 +198,7 @@ export const destinations = [
     permitRequired: false,
     distanceFromBagdogra: "70 km",
     travelTimeFromBagdogra: "2.5 hours",
-    image: "https://images.unsplash.com/photo-1544735716-392fe2489ffa?auto=format&fit=crop&q=80&w=1200",
+    image: darjeelingNight,
     description: "A globally recognized conservation facility specialized in breeding high-altitude species, including the Red Panda, Snow Leopard, and Tibetan Wolf, co-located with the iconic Himalayan Mountaineering Institute.",
     highlights: ["Red Panda Sanctuary", "Snow Leopard Breeding Center", "HMI Everest Museum", "Tenzing Rock climbing", "Bengal Tiger Habitat"],
     alert: null
