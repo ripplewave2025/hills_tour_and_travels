@@ -6,3 +6,10 @@ Pickup location ride from is peeking from below it should be on another page
 The one that is coming up sunrise on kunchunjunga, tiger hill at dawn remove that 
 trust one, trusted by 850 travellers should be up right below the hills tour and travels 
 Book now should be right where the whatsapp is and explore package to the left I want this clean as possible.
+
+
+Packages slider.
+
+Get the code from https://codepen.io/MDJAmin/pen/GgpdKPy
+
+I have also put 
