@@ -6,7 +6,6 @@ import { createRoot } from 'react-dom/client';
 import { createElement } from 'react';
 import { destinations } from '../data/destinations.js';
 import { packages } from '../data/packages.js';
-import { vehicles } from '../data/vehicles.js';
 import { HillsHero } from '../components/react/HillsHero.jsx';
 
 export const Home = {
@@ -20,47 +19,6 @@ export const Home = {
 
       <!-- Build-your-route promo intentionally removed from home; route page still lives at /#/route -->
 
-      <!-- 2. Swipable Destination Deck -->
-      <section class="section-padding overflow-hidden">
-        <div class="container">
-          <div class="section-header flex-between">
-            <div>
-              <span class="badge badge-brand"><i class="fa-solid fa-compass"></i> <span data-i18n="home.destBadge">Explore The Corridor</span></span>
-              <h2 class="section-title" data-i18n="home.destTitle">Major Mountain Destinations</h2>
-            </div>
-            <div class="carousel-nav-arrows">
-              <button class="carousel-arrow" id="carousel-prev" aria-label="Previous Destination"><i class="fa-solid fa-chevron-left"></i></button>
-              <button class="carousel-arrow" id="carousel-next" aria-label="Next Destination"><i class="fa-solid fa-chevron-right"></i></button>
-            </div>
-          </div>
-          
-          <!-- Carousel Viewport -->
-          <div class="carousel-viewport" id="destinations-carousel">
-            <div class="carousel-track">
-              ${destinations.map(dest => `
-                <div class="carousel-slide">
-                  <div class="destination-card glass-panel glass-panel-hover">
-                    <div class="dest-card-image" style="background-image: url('${dest.image}');">
-                      ${dest.permitRequired ? `<span class="dest-permit-tag"><i class="fa-solid fa-id-card"></i> Permit Mandatory</span>` : ''}
-                    </div>
-                    <div class="dest-card-content">
-                      <div class="flex-between">
-                        <span class="dest-card-elevation"><i class="fa-solid fa-mountain"></i> ${dest.elevation}</span>
-                        <span class="dest-card-season"><i class="fa-solid fa-calendar-days"></i> ${dest.bestSeason.split(',')[0]}</span>
-                      </div>
-                      <h3 class="dest-card-title">${dest.name}</h3>
-                      <p class="dest-card-tagline">${dest.tagline}</p>
-                      <a href="#/destinations/${dest.id}" class="btn btn-secondary btn-sm w-100" style="margin-top: 16px;">
-                        <span>Explore Packages</span> <i class="fa-solid fa-arrow-right"></i>
-                      </a>
-                    </div>
-                  </div>
-                </div>
-              `).join("")}
-            </div>
-          </div>
-        </div>
-      </section>
 
       <!-- 3. How It Works Section -->
       <section class="section-padding bg-surface-alt">
@@ -151,35 +109,6 @@ export const Home = {
         </div>
       </section>
 
-      <!-- 5. Interactive Premium Fleet Showcase -->
-      <section class="section-padding bg-surface-alt">
-        <div class="container">
-          <div class="text-center" style="margin-bottom: 50px;">
-            <span class="badge badge-brand"><i class="fa-solid fa-shield-halved"></i> Premium Safety Standards</span>
-            <h2 class="section-title" data-i18n="home.fleetTitle">Mountain Compliant Fleet</h2>
-            <p class="section-subtitle">All vehicles are under 10 years old, regularly inspected, with certified hill drivers.</p>
-          </div>
-
-          <div class="fleet-grid">
-            ${vehicles.map(vh => `
-              <div class="fleet-card glass-panel glass-panel-hover animate-scroll-reveal">
-                <div class="fleet-card-image" style="background-image: url('${vh.image}');"></div>
-                <div class="fleet-card-content">
-                  <span class="badge badge-brand mb-1">${vh.capacity} | ${vh.luggage.split(' ')[0]} Bags</span>
-                  <h3 class="fleet-name">${vh.name}</h3>
-                  <div class="fleet-models" style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 12px;">
-                    Models: ${vh.models.join(", ")}
-                  </div>
-                  <ul class="fleet-features-list">
-                    ${vh.features.slice(0, 3).map(feat => `<li><i class="fa-solid fa-circle-check text-brand"></i> ${feat}</li>`).join("")}
-                  </ul>
-                  ${vh.id.startsWith("suv") ? `<span class="fleet-suv-tag"><i class="fa-solid fa-snowflake"></i> North Sikkim Approved</span>` : ''}
-                </div>
-              </div>
-            `).join("")}
-          </div>
-        </div>
-      </section>
 
       <!-- 6. Trust Badges & Performance Metrics -->
       <section class="section-padding">
@@ -244,76 +173,6 @@ export const Home = {
 
     // Booking widget moved to the dedicated /booking page — hero "Book Now" links there.
 
-    // Swipable Destination Carousel Logic (Custom drag/touch handler)
-    const track = document.querySelector(".carousel-track");
-    const prevBtn = document.getElementById("carousel-prev");
-    const nextBtn = document.getElementById("carousel-next");
-    
-    if (track && prevBtn && nextBtn) {
-      let isDragging = false;
-      let startX = 0;
-      let currentX = 0;
-      let scrollLeft = 0;
-      let scrollOffset = 0;
-
-      // Click arrow buttons
-      const getSlideWidth = () => {
-        const slide = track.querySelector(".carousel-slide");
-        return slide ? slide.getBoundingClientRect().width + 24 : 320; // width + gap
-      };
-
-      prevBtn.addEventListener("click", () => {
-        track.scrollBy({ left: -getSlideWidth(), behavior: "smooth" });
-      });
-
-      nextBtn.addEventListener("click", () => {
-        track.scrollBy({ left: getSlideWidth(), behavior: "smooth" });
-      });
-
-      // Mouse drag logic
-      track.addEventListener("mousedown", (e) => {
-        isDragging = true;
-        startX = e.pageX - track.offsetLeft;
-        scrollLeft = track.scrollLeft;
-        track.style.cursor = "grabbing";
-      });
-
-      track.addEventListener("mouseleave", () => {
-        isDragging = false;
-        track.style.cursor = "grab";
-      });
-
-      track.addEventListener("mouseup", () => {
-        isDragging = false;
-        track.style.cursor = "grab";
-      });
-
-      track.addEventListener("mousemove", (e) => {
-        if (!isDragging) return;
-        e.preventDefault();
-        const x = e.pageX - track.offsetLeft;
-        const walk = (x - startX) * 1.5; // multiplier
-        track.scrollLeft = scrollLeft - walk;
-      });
-
-      // Touch drag logic
-      track.addEventListener("touchstart", (e) => {
-        isDragging = true;
-        startX = e.touches[0].pageX - track.offsetLeft;
-        scrollLeft = track.scrollLeft;
-      });
-
-      track.addEventListener("touchend", () => {
-        isDragging = false;
-      });
-
-      track.addEventListener("touchmove", (e) => {
-        if (!isDragging) return;
-        const x = e.touches[0].pageX - track.offsetLeft;
-        const walk = (x - startX) * 1.5;
-        track.scrollLeft = scrollLeft - walk;
-      });
-    }
 
     // 4. Numbers Count-Up Animation
     const stats = document.querySelectorAll(".stat-number");

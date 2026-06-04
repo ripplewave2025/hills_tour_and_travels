@@ -69,7 +69,9 @@ const T = {
   }
 };
 
-const SWAP_WORDS = ['Darjeeling', 'Sikkim', 'Kalimpong', 'Bhutan', 'Nepal'];
+// Homepage hero cycles the scenic hill places. Bhutan & Nepal are "coming
+// soon" — they stay in the packages area but are kept out of this animation.
+const SWAP_WORDS = ['Darjeeling', 'Kalimpong', 'Sikkim', 'Mirik', 'Kurseong'];
 const WORD_MS = 2400;
 
 function readLang() {

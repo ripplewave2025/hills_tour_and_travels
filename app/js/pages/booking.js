@@ -551,7 +551,7 @@ export const Booking = {
 
         <div class="flex-between" style="border-top: 1px solid var(--glass-border); padding-top: 24px;">
           <button class="btn btn-secondary" id="step4-prev-btn"><i class="fa-solid fa-chevron-left"></i> Previous</button>
-          <button class="btn btn-primary" id="step4-submit-btn"><span>Simulate Pay & Confirm</span> <i class="fa-solid fa-credit-card"></i></button>
+          <button class="btn btn-primary" id="step4-submit-btn"><span>Simulate 50% Advance & Confirm</span> <i class="fa-solid fa-credit-card"></i></button>
         </div>
       </div>
     `;
@@ -621,6 +621,10 @@ export const Booking = {
   renderStep5(panel) {
     const bookingId = "HT" + Math.floor(100000 + Math.random() * 900000);
     const summary = this.getPricingSummary();
+    const advanceAmount = this.getAdvanceAmount(summary.total);
+    const balanceAmount = Math.max(0, Math.round(summary.total || 0) - advanceAmount);
+    const vehicleName = vehicles.find(v => v.id === this.state.vehicleId)?.name || this.state.vehicleId;
+    const permitStatus = summary.permitRequired ? "Pending operator approval" : "Not required";
 
     // Fire-and-forget: save to Supabase (falls back to localStorage if offline)
     CustomerStore.saveBooking({
@@ -632,7 +636,7 @@ export const Booking = {
       drop: getTerminalName(this.state.to),
       date: this.state.date,
       time: this.state.time,
-      vehicle: vehicles.find(v => v.id === this.state.vehicleId)?.name || this.state.vehicleId,
+      vehicle: vehicleName,
       passengers: this.state.passengers,
       days: this.state.days,
       price: summary.total,
@@ -642,6 +646,9 @@ export const Booking = {
     // Hide Right Summary Panel entirely during confirmation stage
     const summaryRightPanel = document.getElementById("booking-summary-panel");
     if (summaryRightPanel) summaryRightPanel.style.display = "none";
+
+    const stepsNav = document.querySelector(".booking-steps-nav");
+    if (stepsNav) stepsNav.style.display = "none";
     
     // Convert parent wrapper to full width
     const parentWrapper = document.querySelector(".booking-wizard-wrapper");
@@ -650,16 +657,17 @@ export const Booking = {
       parentWrapper.style.maxWidth = "750px";
       parentWrapper.style.margin = "40px auto 0 auto";
     }
+    window.scrollTo({ top: 0, behavior: "auto" });
 
     panel.innerHTML = `
-      <div class="animate-fade-in text-center" style="padding: 20px 0;">
+      <div class="animate-fade-in text-center" style="padding: 44px 0 20px;">
         <!-- Success Check Icon with glowing ring -->
         <div class="success-glowing-ring flex-center mb-4">
           <i class="fa-solid fa-circle-check" style="font-size: 4.5rem; color: var(--color-success);"></i>
         </div>
 
         <h2 style="font-size: 2.25rem; font-weight: 800; background: linear-gradient(135deg, white, var(--color-success)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Booking Confirmed!</h2>
-        <p style="color: var(--text-secondary); max-width: 500px; margin: 10px auto 30px auto;">Your payment has been simulated successfully. Permits and dispatch parameters have been routed to operations.</p>
+        <p style="color: var(--text-secondary); max-width: 560px; margin: 10px auto 30px auto;">Your 50% advance payment has been simulated successfully. Final fare verification and dispatch parameters have been routed to operations.</p>
 
         <!-- Premium Ticket Receipt -->
         <div class="ticket-receipt glass-panel mb-5" style="text-align: left; overflow: hidden; position: relative;">
@@ -674,7 +682,7 @@ export const Booking = {
               </div>
               <div style="text-align: right;">
                 <span style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase;">Status</span>
-                <div><span class="badge badge-success"><i class="fa-solid fa-check"></i> paid & confirmed</span></div>
+                <div><span class="badge badge-success"><i class="fa-solid fa-check"></i> advance paid</span></div>
               </div>
             </div>
 
@@ -696,16 +704,44 @@ export const Booking = {
                 <span style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase;">Dispatch Schedule</span>
                 <div style="font-size: 0.95rem; font-weight: 600; color: var(--text-primary); margin-top: 4px;">${this.state.date} @ ${this.state.time}</div>
               </div>
+              <div>
+                <span style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase;">Travellers / Duration</span>
+                <div style="font-size: 0.95rem; font-weight: 600; color: var(--text-primary); margin-top: 4px;">${this.state.passengers} traveller${this.state.passengers > 1 ? 's' : ''} · ${this.state.days} day${this.state.days > 1 ? 's' : ''}</div>
+              </div>
+              <div>
+                <span style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase;">Permit Status</span>
+                <div style="font-size: 0.95rem; font-weight: 600; color: var(--text-primary); margin-top: 4px;">${permitStatus}</div>
+              </div>
             </div>
 
-            <div style="border-top: 1px dashed var(--glass-border); padding-top: 20px; display: flex; align-items: center; justify-content: space-between;">
+            <div style="border-top: 1px dashed var(--glass-border); padding-top: 20px; margin-bottom: 20px;">
+              <span style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; display: block; margin-bottom: 12px;">Estimated Fare Items</span>
+              <div style="display: flex; flex-direction: column; gap: 10px;">
+                ${summary.breakdown.map(b => `
+                  <div class="flex-between" style="font-size: 0.84rem; gap: 16px;">
+                    <span style="color: var(--text-secondary);">${b.label}</span>
+                    <span style="font-family: var(--font-mono); color: var(--text-primary);">${this.formatCurrency(b.amount)}</span>
+                  </div>
+                `).join("")}
+              </div>
+            </div>
+
+            <div style="border-top: 1px dashed var(--glass-border); padding-top: 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 18px;">
               <div>
                 <span style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase;">Vehicle Assigned</span>
-                <div style="font-size: 0.95rem; font-weight: 600; color: var(--brand-color); margin-top: 4px;">${vehicles.find(v => v.id === this.state.vehicleId)?.name}</div>
+                <div style="font-size: 0.95rem; font-weight: 600; color: var(--brand-color); margin-top: 4px;">${vehicleName}</div>
               </div>
               <div style="text-align: right;">
-                <span style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase;">Amount Settled</span>
-                <div style="font-family: var(--font-mono); font-size: 1.5rem; font-weight: 800; color: var(--color-success); margin-top: 4px;">₹${summary.total}</div>
+                <span style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase;">Estimated Total</span>
+                <div style="font-family: var(--font-mono); font-size: 1.25rem; font-weight: 800; color: var(--text-primary); margin-top: 4px;">${this.formatCurrency(summary.total)}</div>
+              </div>
+              <div>
+                <span style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase;">Advance Paid (50%)</span>
+                <div style="font-family: var(--font-mono); font-size: 1.35rem; font-weight: 800; color: var(--color-success); margin-top: 4px;">${this.formatCurrency(advanceAmount)}</div>
+              </div>
+              <div style="text-align: right;">
+                <span style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase;">Balance Due</span>
+                <div style="font-family: var(--font-mono); font-size: 1.35rem; font-weight: 800; color: var(--brand-color); margin-top: 4px;">${this.formatCurrency(balanceAmount)}</div>
               </div>
             </div>
           </div>
@@ -718,6 +754,9 @@ export const Booking = {
           <button id="confirmed-whatsapp-share-btn" class="btn btn-primary">
             <i class="fa-brands fa-whatsapp"></i> Send Voucher to WhatsApp
           </button>
+          <button id="download-receipt-btn" class="btn btn-secondary">
+            <i class="fa-solid fa-file-arrow-down"></i> Download Mock Receipt
+          </button>
           <a href="#/" class="btn btn-secondary">
             <i class="fa-solid fa-house"></i> Back to Homepage
           </a>
@@ -729,10 +768,28 @@ export const Booking = {
     document.getElementById("confirmed-whatsapp-share-btn").addEventListener("click", () => {
       const fromName = getTerminalName(this.state.from).split(" (")[0];
       const toName = getTerminalName(this.state.to);
-      const msg = `*HILLS TOUR & TRAVELS VOUCHER*%0A------------------------------%0A*Reference ID:* ${bookingId}%0A*Customer:* ${this.state.userDetails.name}%0A*Route:* ${fromName} to ${toName}%0A*Date/Time:* ${this.state.date} @ ${this.state.time}%0A*Vehicle:* ${vehicles.find(v => v.id === this.state.vehicleId)?.name}%0A*Paid Amount:* INR ${summary.total}/-%0A------------------------------%0A*Permits Status:* Pending Approval (Voter ID Verified)`;
+      const msg = [
+        "*HILLS TOUR & TRAVELS VOUCHER*",
+        "------------------------------",
+        `*Reference ID:* ${bookingId}`,
+        `*Customer:* ${this.state.userDetails.name}`,
+        `*Route:* ${fromName} to ${toName}`,
+        `*Date/Time:* ${this.state.date} @ ${this.state.time}`,
+        `*Vehicle:* ${vehicleName}`,
+        `*Estimated Total:* INR ${Math.round(summary.total || 0)}/-`,
+        `*Advance Paid (50%):* INR ${advanceAmount}/-`,
+        `*Balance Due:* INR ${balanceAmount}/-`,
+        `*Fare Status:* Estimated, final fare pending operator confirmation`,
+        "------------------------------",
+        `*Permit Status:* ${permitStatus}`
+      ].join("\n");
       
-      const url = `https://wa.me/919907219843?text=${msg}`;
+      const url = `https://wa.me/919907219843?text=${encodeURIComponent(msg)}`;
       window.open(url, "_blank");
+    });
+
+    document.getElementById("download-receipt-btn").addEventListener("click", () => {
+      this.downloadReceipt(bookingId, summary);
     });
   },
 
@@ -778,6 +835,54 @@ export const Booking = {
     return summary;
   },
 
+  formatCurrency(amount) {
+    return `₹${Math.round(Number(amount) || 0).toLocaleString("en-IN")}`;
+  },
+
+  getAdvanceAmount(total) {
+    return Math.round((Number(total) || 0) / 2);
+  },
+
+  downloadReceipt(bookingId, summary) {
+    const advanceAmount = this.getAdvanceAmount(summary.total);
+    const balanceAmount = Math.max(0, Math.round(summary.total || 0) - advanceAmount);
+    const vehicleName = vehicles.find(v => v.id === this.state.vehicleId)?.name || this.state.vehicleId;
+    const permitStatus = summary.permitRequired ? "Pending operator approval" : "Not required";
+    const lines = [
+      "HILLS TOUR & TRAVELS - MOCK RECEIPT",
+      "This is a simulated receipt for prototype checkout testing.",
+      "",
+      `Reference: ${bookingId}`,
+      `Traveler: ${this.state.userDetails.name}`,
+      `Phone: ${this.state.userDetails.phone}`,
+      `Email: ${this.state.userDetails.email || "N/A"}`,
+      `Route: ${getTerminalName(this.state.from).split(" (")[0]} to ${getTerminalName(this.state.to)}`,
+      `Date/Time: ${this.state.date} @ ${this.state.time}`,
+      `Travellers: ${this.state.passengers}`,
+      `Duration: ${this.state.days} day${this.state.days > 1 ? "s" : ""}`,
+      `Vehicle: ${vehicleName}`,
+      `Permit Status: ${permitStatus}`,
+      "",
+      "Fare items:",
+      ...summary.breakdown.map(b => `- ${b.label}: ${this.formatCurrency(b.amount)}`),
+      "",
+      `Estimated Total: ${this.formatCurrency(summary.total)}`,
+      `Advance Paid (50%): ${this.formatCurrency(advanceAmount)}`,
+      `Balance Due: ${this.formatCurrency(balanceAmount)}`,
+      "",
+      "Final fare is pending operator confirmation."
+    ];
+    const blob = new Blob([lines.join("\n")], { type: "text/plain;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `${bookingId}-mock-receipt.txt`;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    window.setTimeout(() => URL.revokeObjectURL(url), 0);
+  },
+
   // STEP SUMMARY RENDER PANEL
   updateSummary() {
     const summaryPanel = document.getElementById("booking-summary-panel");
@@ -785,56 +890,76 @@ export const Booking = {
 
     const summary = this.getPricingSummary();
     const isPackage = !!this.state.packageId;
+    const advanceAmount = this.getAdvanceAmount(summary.total);
+    const balanceAmount = Math.max(0, Math.round(summary.total || 0) - advanceAmount);
 
     if (summary.total === 0) {
       summaryPanel.innerHTML = `
-        <div style="text-align: center; color: var(--text-muted); padding: 20px 0;">
-          <i class="fa-solid fa-taxi" style="font-size: 2.5rem; margin-bottom: 12px; opacity: 0.3;"></i>
-          <h3 style="font-size: 1.1rem; color: var(--text-secondary);">Incomplete Itinerary</h3>
-          <p style="font-size: 0.8rem; margin-top: 6px;">Pricing breakdowns generate instantly upon route mapping.</p>
+        <div class="summary-empty-state">
+          <i class="fa-solid fa-taxi"></i>
+          <h3 class="summary-empty-title">Incomplete Itinerary</h3>
+          <p class="summary-empty-desc">Pricing breakdowns generate instantly upon route mapping.</p>
         </div>
       `;
       return;
     }
 
     summaryPanel.innerHTML = `
-      <h3 style="font-size: 1.25rem; margin-bottom: 20px; border-bottom: 1px solid var(--glass-border); padding-bottom: 12px;">Trip Summary ${summary.isEstimated ? '<span class="badge" style="font-size: 0.65rem; padding: 3px 8px; background: rgba(245, 158, 11, 0.15); border: 1px solid rgba(245, 158, 11, 0.35); color: var(--brand-color); border-radius: var(--radius-sm); margin-left: 8px; vertical-align: middle;"><i class="fa-solid fa-circle-info"></i> Estimated</span>' : ''}</h3>
+      <h3 class="summary-header">
+        <span>Trip Summary</span>
+        ${summary.isEstimated ? `
+          <span class="summary-estimated-badge">
+            <i class="fa-solid fa-circle-info"></i> Estimated
+          </span>
+        ` : ''}
+      </h3>
 
-      <div style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 24px;">
-        <div class="flex-between" style="font-size: 0.85rem;">
-          <span style="color: var(--text-secondary);">Transit Distance:</span>
-          <span style="font-weight: 600; color: var(--text-primary);">${summary.distance}</span>
+      <div class="summary-details-list">
+        <div class="summary-details-item">
+          <span class="summary-details-label"><i class="fa-solid fa-road"></i> Transit Distance</span>
+          <span class="summary-details-value">${summary.distance}</span>
         </div>
-        <div class="flex-between" style="font-size: 0.85rem;">
-          <span style="color: var(--text-secondary);">Est. Drive Time:</span>
-          <span style="font-weight: 600; color: var(--text-primary);">${summary.duration}</span>
+        <div class="summary-details-item">
+          <span class="summary-details-label"><i class="fa-solid fa-clock"></i> Est. Drive Time</span>
+          <span class="summary-details-value">${summary.duration}</span>
         </div>
-        <div class="flex-between" style="font-size: 0.85rem;">
-          <span style="color: var(--text-secondary);">Vehicle Category:</span>
-          <span style="font-weight: 600; color: var(--brand-color);">${vehicles.find(v => v.id === this.state.vehicleId)?.name}</span>
+        <div class="summary-details-item">
+          <span class="summary-details-label"><i class="fa-solid fa-car"></i> Vehicle Category</span>
+          <span class="summary-details-value highlight">${vehicles.find(v => v.id === this.state.vehicleId)?.name || 'Standard'}</span>
         </div>
       </div>
 
-      <div style="border-top: 1px solid var(--glass-border); padding-top: 18px; margin-bottom: 24px;">
-        <h4 style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 16px; text-transform: uppercase; letter-spacing: 0.05em;">Fare Breakdown</h4>
-        <div style="display: flex; flex-direction: column; gap: 12px;">
+      <div class="summary-breakdown-section">
+        <h4 class="summary-breakdown-title">Fare Breakdown</h4>
+        <div class="summary-breakdown-list">
           ${summary.breakdown.map(b => `
-            <div class="flex-between" style="font-size: 0.85rem;">
-              <span style="color: var(--text-muted);">${b.label}</span>
-              <span style="font-family: var(--font-mono); color: var(--text-secondary);">₹${b.amount}</span>
+            <div class="summary-breakdown-row">
+              <span class="summary-breakdown-label">${b.label}</span>
+              <span class="summary-breakdown-price">${this.formatCurrency(b.amount)}</span>
             </div>
           `).join("")}
         </div>
       </div>
 
-      <div class="flex-between" style="border-top: 2px solid var(--brand-color); padding-top: 18px; margin-top: 12px;">
-        <span style="font-size: 1rem; font-weight: 700; color: var(--text-primary);">Total Amount (All Inclusive)</span>
-        <span style="font-family: var(--font-mono); font-size: 1.6rem; font-weight: 800; color: var(--color-success);">₹${summary.total}</span>
+      <div class="summary-total-row">
+        <span class="summary-total-label">Total Amount (All Inclusive)</span>
+        <span class="summary-total-price">${this.formatCurrency(summary.total)}</span>
       </div>
 
-      <div style="background: rgba(16, 185, 129, 0.06); border: 1.5px solid rgba(16, 185, 129, 0.15); border-radius: var(--radius-sm); padding: 12px; margin-top: 24px; font-size: 0.8rem; color: #a7f3d0; text-align: center; display: flex; align-items: center; justify-content: center; gap: 8px;">
-        <i class="fa-solid fa-shield-halved" style="font-size: 1rem; color: var(--color-success);"></i>
-        <span>No syndicate hassles. Price guaranteed.</span>
+      <div class="summary-advance-card">
+        <div class="summary-advance-row">
+          <span class="summary-advance-label">Pay Advance Now (50%)</span>
+          <span class="summary-advance-price">${this.formatCurrency(advanceAmount)}</span>
+        </div>
+        <div class="summary-balance-row">
+          <span class="summary-balance-label">Balance after operator confirmation</span>
+          <span class="summary-balance-price">${this.formatCurrency(balanceAmount)}</span>
+        </div>
+      </div>
+
+      <div class="summary-estimate-warning">
+        <i class="fa-solid fa-shield-halved"></i>
+        <span>Estimated fare. 50% advance only; final price is confirmed by operations.</span>
       </div>
     `;
   }

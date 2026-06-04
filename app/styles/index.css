@@ -219,6 +219,23 @@ a {
   color: var(--text-muted);
 }
 
+select.input-glass {
+  background-color: rgba(11, 15, 25, 0.88);
+  color: var(--text-primary);
+  color-scheme: dark;
+}
+
+select.input-glass option,
+select.input-glass optgroup {
+  background: var(--bg-surface);
+  color: var(--text-primary);
+}
+
+select.input-glass option:checked {
+  background: var(--bg-elevated);
+  color: var(--brand-color);
+}
+
 /* --- 6. Helper & Utility Layouts --- */
 .grid {
   display: grid;
@@ -362,6 +379,18 @@ a {
   transform: rotate(15deg) scale(1.05);
 }
 
+.nav-logo-image {
+  width: 44px;
+  height: 44px;
+  object-fit: contain;
+  filter: drop-shadow(0 0 8px rgba(245, 158, 11, 0.25));
+  transition: transform var(--transition-normal);
+}
+
+.nav-brand:hover .nav-logo-image {
+  transform: rotate(10deg) scale(1.08);
+}
+
 .brand-text {
   display: flex;
   flex-direction: column;
@@ -416,6 +445,117 @@ a {
 
 .nav-link:hover::after, .nav-link.active::after {
   width: 100%;
+}
+
+/* --- 9.1 Desktop Dropdown Styling --- */
+.nav-dropdown {
+  position: relative;
+}
+
+.nav-dropdown .nav-caret {
+  font-size: 0.65rem;
+  margin-left: 6px;
+  transition: transform var(--transition-fast);
+}
+
+.nav-dropdown:hover .nav-caret {
+  transform: rotate(180deg);
+}
+
+.nav-dropdown-menu {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%) translateY(10px);
+  min-width: 200px;
+  background: rgba(11, 15, 25, 0.95);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-md);
+  padding: 8px 0;
+  list-style: none;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity var(--transition-normal), transform var(--transition-normal), visibility var(--transition-normal);
+  z-index: 1000;
+}
+
+.nav-dropdown:hover .nav-dropdown-menu,
+.nav-dropdown:focus-within .nav-dropdown-menu {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(-50%) translateY(0);
+}
+
+.nav-dropdown-link {
+  display: block;
+  padding: 10px 20px;
+  font-family: var(--font-heading);
+  font-weight: 500;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  transition: all var(--transition-fast);
+  text-align: left;
+}
+
+.nav-dropdown-link:hover,
+.nav-dropdown-link.active {
+  color: var(--brand-color);
+  background: rgba(245, 158, 11, 0.08);
+}
+
+/* --- 9.2 Mobile Drawer Submenu Styling --- */
+.drawer-dropdown {
+  display: flex;
+  flex-direction: column;
+}
+
+.drawer-submenu {
+  list-style: none;
+  padding-left: 16px;
+  margin-top: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.drawer-submenu-link {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-family: var(--font-heading);
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  padding: 8px 16px;
+  border-radius: var(--radius-md);
+  transition: all var(--transition-normal);
+}
+
+.drawer-submenu-link i {
+  width: 20px;
+  font-size: 0.95rem;
+}
+
+.drawer-submenu-link:hover,
+.drawer-submenu-link.active {
+  background: var(--brand-light);
+  color: var(--brand-color);
+}
+
+@media (max-width: 1120px) {
+  .nav-links {
+    gap: 18px;
+  }
+  .nav-link {
+    font-size: 0.88rem;
+  }
+  .nav-cta {
+    padding-left: 14px;
+    padding-right: 14px;
+  }
 }
 
 .nav-cta {
@@ -3045,7 +3185,7 @@ a, button, [role="button"], select, input {
 .hpkg-root {
   max-width: 1120px;
   margin: 0 auto;
-  padding: 92px 0 40px;
+  padding: 28px 0 40px;
 }
 
 .hpkg-header {
@@ -3069,7 +3209,11 @@ a, button, [role="button"], select, input {
   border: 1px solid var(--glass-border);
   border-radius: 999px;
   padding: 5px;
+  max-width: 100%;
+  overflow-x: auto;
+  scrollbar-width: none;
 }
+.hpkg-tabs::-webkit-scrollbar { display: none; }
 .hpkg-tab {
   border: none;
   background: transparent;
@@ -3083,6 +3227,7 @@ a, button, [role="button"], select, input {
   display: flex;
   align-items: center;
   gap: 7px;
+  white-space: nowrap;
   transition: all 0.25s ease;
 }
 .hpkg-tab.is-active {
@@ -3252,8 +3397,10 @@ a, button, [role="button"], select, input {
 
 /* Mobile: full-bleed stage, smaller queued cards */
 @media (max-width: 768px) {
-  .hpkg-root { padding: 80px 0 28px; }
+  .hpkg-root { padding: 24px 0 28px; }
   .hpkg-header { padding: 0 16px 14px; }
+  .hpkg-tabs { width: 100%; }
+  .hpkg-tab { flex: 1 0 auto; justify-content: center; padding: 9px 12px; }
   .hpkg-stage { height: min(78vh, 600px); border-radius: 0; }
   .hpkg-slide .hpkg-item:nth-child(1),
   .hpkg-slide .hpkg-item:nth-child(2) { border-radius: 0; }
@@ -3450,3 +3597,741 @@ a, button, [role="button"], select, input {
 .admin-card .grid-2 { grid-template-columns: 1fr 1fr; }
 @media (max-width: 600px) { .admin-card .grid-2 { grid-template-columns: 1fr; } }
 
+/* ==========================================================================
+   16. Booking Page Wizard Styles
+   ========================================================================== */
+.booking-section {
+  padding: 60px 0 80px;
+}
+
+/* Step Indicator Bar */
+.booking-steps-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  max-width: 800px;
+  margin: 0 auto 40px;
+  padding: 0 10px;
+}
+
+.step-nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-muted);
+  transition: all var(--transition-normal);
+  flex: 1;
+}
+
+.step-nav-circle {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--bg-surface);
+  border: 2px solid var(--glass-border);
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 1rem;
+  transition: all var(--transition-normal);
+}
+
+.step-nav-text {
+  font-family: var(--font-heading);
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-align: center;
+}
+
+.step-nav-line {
+  height: 2px;
+  background: var(--glass-border);
+  flex: 2;
+  margin-top: -24px; /* align with circles */
+  position: relative;
+  z-index: 1;
+}
+
+/* Active & Completed States */
+.step-nav-item.active {
+  color: var(--brand-color);
+}
+
+.step-nav-item.active .step-nav-circle {
+  border-color: var(--brand-color);
+  background: var(--brand-light);
+  color: var(--brand-color);
+  box-shadow: var(--shadow-brand-glow);
+}
+
+.step-nav-item.completed {
+  color: var(--color-success);
+}
+
+.step-nav-item.completed .step-nav-circle {
+  border-color: var(--color-success);
+  background: rgba(16, 185, 129, 0.1);
+  color: var(--color-success);
+}
+
+/* Wizard Layout */
+.booking-wizard-wrapper {
+  display: grid;
+  grid-template-columns: 1.8fr 1.2fr;
+  gap: 32px;
+  align-items: start;
+}
+
+.booking-left-content {
+  padding: 40px;
+  transition: padding var(--transition-normal);
+}
+
+.booking-right-summary {
+  padding: 30px;
+  transition: padding var(--transition-normal);
+}
+
+/* Premium Trip Summary Design */
+.summary-header {
+  font-family: var(--font-heading);
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin-bottom: 20px;
+  border-bottom: 1px solid var(--glass-border);
+  padding-bottom: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.summary-estimated-badge {
+  font-size: 0.65rem;
+  padding: 4px 8px;
+  background: rgba(245, 158, 11, 0.12);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  color: var(--brand-color);
+  border-radius: var(--radius-xs);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.summary-details-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.summary-details-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.88rem;
+  color: var(--text-secondary);
+}
+
+.summary-details-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.summary-details-label i {
+  color: var(--brand-color);
+  width: 16px;
+  text-align: center;
+  font-size: 0.85rem;
+  opacity: 0.85;
+}
+
+.summary-details-value {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.summary-details-value.highlight {
+  color: var(--brand-color);
+}
+
+.summary-breakdown-section {
+  border-top: 1px solid var(--glass-border);
+  padding-top: 18px;
+  margin-bottom: 24px;
+}
+
+.summary-breakdown-title {
+  font-family: var(--font-heading);
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: 14px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.summary-breakdown-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.summary-breakdown-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.summary-breakdown-label {
+  flex-grow: 1;
+  padding-right: 12px;
+}
+
+.summary-breakdown-price {
+  font-family: var(--font-mono);
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+.summary-total-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-top: 1.5px solid var(--glass-border);
+  padding-top: 18px;
+  margin-top: 12px;
+}
+
+.summary-total-label {
+  font-family: var(--font-heading);
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.summary-total-price {
+  font-family: var(--font-mono);
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.05);
+}
+
+.summary-advance-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background: rgba(16, 185, 129, 0.04);
+  border: 1px solid rgba(16, 185, 129, 0.15);
+  border-left: 4px solid var(--color-success);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  margin-top: 20px;
+  transition: all var(--transition-normal);
+}
+
+.summary-advance-card:hover {
+  background: rgba(16, 185, 129, 0.07);
+  border-color: rgba(16, 185, 129, 0.25);
+  box-shadow: 0 4px 16px rgba(16, 185, 129, 0.06);
+}
+
+.summary-advance-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.9rem;
+}
+
+.summary-advance-label {
+  font-family: var(--font-heading);
+  color: var(--text-secondary);
+  font-weight: 600;
+}
+
+.summary-advance-price {
+  font-family: var(--font-mono);
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--color-success);
+}
+
+.summary-balance-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.82rem;
+  border-top: 1px dashed rgba(255, 255, 255, 0.06);
+  padding-top: 8px;
+}
+
+.summary-balance-label {
+  color: var(--text-muted);
+}
+
+.summary-balance-price {
+  font-family: var(--font-mono);
+  font-weight: 600;
+  color: var(--brand-color);
+}
+
+.summary-estimate-warning {
+  background: rgba(245, 158, 11, 0.04);
+  border: 1px solid rgba(245, 158, 11, 0.15);
+  border-left: 4px solid var(--brand-color);
+  border-radius: var(--radius-md);
+  padding: 14px;
+  margin-top: 18px;
+  font-size: 0.8rem;
+  color: #fef08a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  line-height: 1.4;
+}
+
+.summary-estimate-warning i {
+  font-size: 1rem;
+  color: var(--brand-color);
+  flex-shrink: 0;
+}
+
+.summary-empty-state {
+  text-align: center;
+  color: var(--text-muted);
+  padding: 30px 0;
+}
+
+.summary-empty-state i {
+  font-size: 2.5rem;
+  margin-bottom: 12px;
+  opacity: 0.4;
+  color: var(--brand-color);
+}
+
+.summary-empty-title {
+  font-size: 1.1rem;
+  color: var(--text-secondary);
+  font-family: var(--font-heading);
+}
+
+.summary-empty-desc {
+  font-size: 0.8rem;
+  margin-top: 6px;
+  color: var(--text-muted);
+}
+
+/* Fleet Selection Cards */
+.fleet-selection-list {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 20px;
+}
+
+.fleet-select-card {
+  display: flex;
+  gap: 24px;
+  padding: 24px;
+  cursor: pointer;
+  overflow: hidden;
+  border-radius: var(--radius-md);
+  transition: all var(--transition-normal);
+  position: relative;
+}
+
+.fleet-select-card.selected {
+  border-color: var(--brand-color);
+  background: rgba(245, 158, 11, 0.05);
+  box-shadow: var(--shadow-brand-glow);
+}
+
+.fleet-select-image {
+  width: 180px;
+  height: 120px;
+  background-size: cover;
+  background-position: center;
+  border-radius: var(--radius-sm);
+  flex-shrink: 0;
+}
+
+.fleet-select-details {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.fleet-select-multiplier {
+  font-family: var(--font-mono);
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: var(--color-success);
+}
+
+.fleet-select-meta {
+  margin-top: 12px;
+  gap: 16px;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.fleet-select-meta span {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.fleet-select-card.disallowed-terrain {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background: rgba(239, 68, 68, 0.02);
+  border-color: rgba(239, 68, 68, 0.1);
+}
+
+.fleet-disallowed-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--color-danger);
+  margin-top: auto;
+  background: var(--color-danger-bg);
+  padding: 4px 10px;
+  border-radius: var(--radius-xs);
+  align-self: flex-start;
+}
+
+/* Ride Enhancements / Addons */
+.addon-card {
+  padding: 24px;
+  cursor: pointer;
+  transition: all var(--transition-normal);
+  border-radius: var(--radius-md);
+}
+
+.addon-card:hover {
+  border-color: var(--glass-border-hover);
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.addon-icon-circle {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--brand-light);
+  color: var(--brand-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  flex-shrink: 0;
+}
+
+.addon-price {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  color: var(--text-primary);
+  font-size: 0.95rem;
+}
+
+.flex-col-end {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: space-between;
+}
+
+/* Document Upload Zones */
+.upload-zone-glass {
+  border: 2px dashed var(--glass-border);
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: var(--radius-md);
+  padding: 30px;
+  text-align: center;
+  cursor: pointer;
+  transition: all var(--transition-normal);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.upload-zone-glass:hover {
+  border-color: var(--brand-color);
+  background: rgba(245, 158, 11, 0.03);
+}
+
+.upload-icon {
+  font-size: 2rem;
+  color: var(--text-muted);
+  transition: color var(--transition-normal);
+}
+
+.upload-zone-glass:hover .upload-icon {
+  color: var(--brand-color);
+}
+
+/* Aadhaar Warnings and Confirmation Receipt */
+.aadhaar-warning-pulsate {
+  animation: pulseWarning 2s ease-in-out infinite;
+}
+
+@keyframes pulseWarning {
+  0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.2); }
+  70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+}
+
+.success-glowing-ring {
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  background: rgba(16, 185, 129, 0.1);
+  margin: 0 auto;
+  animation: pulseSuccess 2s ease-in-out infinite;
+}
+
+@keyframes pulseSuccess {
+  0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.3); }
+  70% { box-shadow: 0 0 0 15px rgba(16, 185, 129, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+}
+
+.ticket-receipt {
+  background: var(--bg-surface);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--glass-border);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
+}
+
+/* Ticket Jagged Tear effect */
+.ticket-tear-effect {
+  position: relative;
+  height: 12px;
+  background-image: radial-gradient(circle, transparent 6px, var(--bg-surface) 6px);
+  background-size: 16px 12px;
+  background-position: left bottom;
+  width: 100%;
+}
+
+/* Responsive Rules for Booking Wizard */
+@media (max-width: 1200px) {
+  .booking-left-content {
+    padding: 30px 24px;
+  }
+  .booking-right-summary {
+    padding: 20px;
+  }
+  .booking-wizard-wrapper {
+    gap: 24px;
+  }
+}
+
+@media (max-width: 992px) {
+  .booking-wizard-wrapper {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+}
+
+@media (max-width: 768px) {
+  .booking-left-content {
+    padding: 24px;
+  }
+  .booking-right-summary {
+    padding: 20px;
+  }
+  .fleet-select-card {
+    flex-direction: column;
+    gap: 16px;
+    padding: 16px;
+  }
+  .fleet-select-image {
+    width: 100%;
+    height: 160px;
+  }
+  .booking-steps-nav {
+    margin-bottom: 24px;
+  }
+  .step-nav-text {
+    display: none; /* Hide step names on small mobile */
+  }
+  .step-nav-line {
+    margin-top: -20px;
+  }
+}
+
+/* Brand Hover Card Details Popup */
+.brand-hover-card {
+  position: absolute;
+  top: calc(100% + 15px);
+  left: 0;
+  width: 290px;
+  background: rgba(11, 15, 25, 0.95);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-md);
+  padding: 20px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6), var(--shadow-brand-glow);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(12px);
+  transition: opacity var(--transition-normal), transform var(--transition-normal), visibility var(--transition-normal);
+  z-index: 1200;
+  pointer-events: none;
+}
+
+/* Arrow indicator for the card pointing up */
+.brand-hover-card::before {
+  content: '';
+  position: absolute;
+  bottom: 100%;
+  left: 20px;
+  border: 8px solid transparent;
+  border-bottom-color: var(--glass-border);
+}
+
+.brand-hover-card::after {
+  content: '';
+  position: absolute;
+  bottom: 100%;
+  left: 20px;
+  border: 7px solid transparent;
+  border-bottom-color: rgba(11, 15, 25, 0.95);
+}
+
+/* Hover trigger state */
+.nav-brand:hover .brand-hover-card {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+/* Hover Card Inner Elements */
+.hover-card-logo {
+  width: 130px;
+  height: 130px;
+  object-fit: contain;
+  margin: 0 auto 12px auto;
+  display: block;
+  filter: drop-shadow(0 0 12px rgba(245, 158, 11, 0.25));
+  transition: transform var(--transition-slow);
+}
+
+.nav-brand:hover .hover-card-logo {
+  transform: scale(1.06);
+}
+
+.hover-card-title {
+  font-family: var(--font-heading);
+  font-size: 1.15rem;
+  font-weight: 700;
+  text-align: center;
+  color: var(--text-primary);
+  margin-bottom: 2px;
+  letter-spacing: -0.01em;
+}
+
+.hover-card-subtitle {
+  font-size: 0.75rem;
+  text-align: center;
+  color: var(--brand-color);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 12px;
+}
+
+.hover-card-divider {
+  height: 1px;
+  background: var(--glass-border);
+  margin: 12px 0;
+}
+
+.hover-card-features {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 0.76rem;
+  color: var(--text-secondary);
+}
+
+.hover-card-features span {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.hover-card-features i {
+  font-size: 0.8rem;
+  color: var(--brand-color);
+}
+
+/* Footer upwards pointing hover card */
+.brand-hover-card-up {
+  position: absolute;
+  bottom: calc(100% + 15px);
+  top: auto;
+  left: 0;
+  width: 290px;
+  background: rgba(11, 15, 25, 0.95);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-md);
+  padding: 20px;
+  box-shadow: 0 -20px 50px rgba(0, 0, 0, 0.6), var(--shadow-brand-glow);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-12px);
+  transition: opacity var(--transition-normal), transform var(--transition-normal), visibility var(--transition-normal);
+  z-index: 1200;
+  pointer-events: none;
+}
+
+/* Arrow pointing down for upward card */
+.brand-hover-card-up::before {
+  content: '';
+  position: absolute;
+  top: 100%;
+  bottom: auto;
+  left: 20px;
+  border: 8px solid transparent;
+  border-top-color: var(--glass-border);
+}
+
+.brand-hover-card-up::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  bottom: auto;
+  left: 20px;
+  border: 7px solid transparent;
+  border-top-color: rgba(11, 15, 25, 0.95);
+}
+
+.nav-brand:hover .brand-hover-card-up {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+/* Responsive Rule - Disable hover cards on small/mobile screens */
+@media (max-width: 768px) {
+  .brand-hover-card,
+  .brand-hover-card-up {
+    display: none !important;
+  }
+}

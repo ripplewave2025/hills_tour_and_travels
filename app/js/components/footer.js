@@ -1,6 +1,4 @@
-/* ==========================================
-   HILLS TOUR & TRAVELS — FOOTER COMPONENT
-   ========================================== */
+import logoSvg from '../../images/hills_tour_and_travels.svg';
 
 export const Footer = {
   render() {
@@ -9,8 +7,20 @@ export const Footer = {
         <div class="container footer-grid">
           <!-- Column 1: Brand Info -->
           <div class="footer-col brand-col">
-            <a href="#/" class="nav-brand">
-              <span class="logo-circle"><i class="fa-solid fa-mountain-sun"></i></span>
+            <a href="#/" class="nav-brand" style="position: relative;">
+              <img src="${logoSvg}" alt="Hills Tour & Travels Logo" class="nav-logo-image" />
+              <!-- Hover Card Popup: Peek Details (Upward) -->
+              <div class="brand-hover-card-up">
+                <img src="${logoSvg}" alt="Full Logo Details" class="hover-card-logo" />
+                <h4 class="hover-card-title">Hills Tour & Travels</h4>
+                <p class="hover-card-subtitle">Mountain Transit Aggregator</p>
+                <div class="hover-card-divider"></div>
+                <div class="hover-card-features">
+                  <span><i class="fa-solid fa-circle-check"></i> Government Permit processing</span>
+                  <span><i class="fa-solid fa-circle-check"></i> Verified Mountain fleet</span>
+                  <span><i class="fa-solid fa-circle-check"></i> Sikkim · Darjeeling · Bhutan · Nepal</span>
+                </div>
+              </div>
               <div class="brand-text">
                 <span class="brand-title" style="color: var(--text-primary);">HILLS</span>
                 <span class="brand-subtitle">TOUR & TRAVELS</span>

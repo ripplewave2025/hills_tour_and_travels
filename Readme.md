@@ -14,10 +14,10 @@ I have 3 Images in C:\Users\FaradaysCage007\Desktop\2_PROJECTS\Hills_tour_and_tr
 
 Texts:
 
-Explore Darjeeling, Sikkim,
-with us.
+Explore Darjeeling, Sikkim, (put all the Darjeelings and sikkims tourists spots in these animation with changing fonts)
+with us.  (move this a bit up right below the 850+ travellers and review aligning to the left so the picture is clean)
 
-Premium fleet • Local drivers • Curated tours • Door-to-door transfers
+Premium fleet • Local drivers • Curated tours • Door-to-door transfers (it should be right above explore packages and book now in a clean way)
 
 sample and some thinking is in 
 
@@ -44,7 +44,7 @@ Hyper Local Sight seeing with experienced Drivers
 
 
 
-2. Destination:
+2. Destination: 
 
 Nepal - from darjeeling, siliguri, sikkim to Nepal
 

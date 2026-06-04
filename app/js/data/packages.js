@@ -474,6 +474,7 @@ export const packages = [
   /* ===================== NEPAL ===================== */
   {
     id: "nepal-borderlands-expedition",
+    isComingSoon: true,
     destinationId: "nepal",
     name: "Nepal Borderlands & Ilam Tea",
     category: "full-day",
@@ -494,6 +495,7 @@ export const packages = [
   /* ===================== BHUTAN ===================== */
   {
     id: "bhutan-thunder-dragon-voyage",
+    isComingSoon: true,
     destinationId: "bhutan",
     name: "Bhutan Thunder Dragon Voyage",
     category: "multi-day",

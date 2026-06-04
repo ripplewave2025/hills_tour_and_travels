@@ -13,7 +13,11 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { destinations } from '../../data/destinations.js';
+import { PLACE_GROUPS } from '../../data/place-groups.js';
+import { DARJEELING_SIGHTS } from '../../data/darjeeling-sights.js';
 import { packages, CATEGORY_LABELS, CATEGORY_ORDER } from '../../data/packages.js';
+import { routes } from '../../data/routes.js';
+import { vehicles } from '../../data/vehicles.js';
 
 // Pre-curated segments based on customer personas
 const AUDIENCE_CATEGORIES = [
@@ -71,19 +75,72 @@ const AUDIENCE_CATEGORIES = [
     permitRequired: false,
     image: 'https://images.unsplash.com/photo-1491438590914-bc09fcaaf77a?auto=format&fit=crop&q=80&w=1200',
     packageIds: ['teesta-river-adventure', 'gangtok-tsomgo-circuit', 'siliguri-gateway-5pt']
-  },
-  {
-    id: 'luxury',
-    name: 'Luxury & Custom',
-    tagline: 'Ultra-premium comfort',
-    description: 'Premium SUV fleet (Innova Crysta), selected luxury suites, private guided tours, and fully managed protected area permits.',
-    elevation: 'VIP Service',
-    bestSeason: 'Year-round',
-    permitRequired: true,
-    image: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&q=80&w=1200',
-    packageIds: ['sikkim-north-expedition', 'bhutan-thunder-dragon-voyage', 'nepal-borderlands-expedition']
   }
 ];
+
+const TAB_COPY = {
+  places: {
+    badge: 'Explore by Place',
+    title: 'Tour Packages by Place'
+  },
+  darjeeling: {
+    badge: 'Darjeeling Sightseeing',
+    title: 'Things to See in Darjeeling'
+  },
+  experiences: {
+    badge: 'Audience Tiers',
+    title: 'Experiences'
+  },
+  'pickup-dropoff': {
+    badge: 'Private Transfers',
+    title: 'Pickup / Drop-off'
+  },
+  fleet: {
+    badge: 'Mountain Compliance',
+    title: 'Mountain Fleet & Safety'
+  }
+};
+
+const ROUTE_DESTINATION_FALLBACKS = {
+  pelling: 'gangtok',
+  jaigaon: 'bhutan',
+  phuentsholing: 'bhutan',
+  thimphu: 'bhutan',
+  kakarvitta: 'nepal',
+  kathmandu: 'nepal'
+};
+
+function shortTerminal(name = '') {
+  return name.split(' (')[0];
+}
+
+function getRouteImage(route) {
+  const destinationId = ROUTE_DESTINATION_FALLBACKS[route.to] || route.to;
+  return destinations.find((d) => d.id === destinationId)?.image || destinations[0]?.image;
+}
+
+function formatFare(amount) {
+  return `₹${Number(amount || 0).toLocaleString('en-IN')}`;
+}
+
+const PICKUP_DROPOFF_ROUTES = routes.map((route, index) => {
+  const priceLabel = route.basePriceSedan
+    ? `Sedan from ${formatFare(route.basePriceSedan)}`
+    : `SUV from ${formatFare(route.basePriceSuv)}`;
+
+  return {
+    id: `route-${route.from}-${route.to}-${index}`,
+    name: `${shortTerminal(route.fromName)} to ${shortTerminal(route.toName)}`,
+    tagline: `${route.distance} • ${route.duration}`,
+    description: route.alert || 'Private point-to-point transfer with live fare estimate and vehicle recommendation.',
+    elevation: priceLabel,
+    bestSeason: route.isCrossBorder ? 'Border route' : 'Daily departures',
+    permitRequired: route.permitRequired,
+    image: getRouteImage(route),
+    from: route.from,
+    to: route.to
+  };
+});
 
 // A soft dark gradient keeps the bottom-left text legible over any photo.
 const SCRIM = 'linear-gradient(0deg, rgba(6,9,19,0.85) 0%, rgba(6,9,19,0.25) 45%, rgba(6,9,19,0.05) 100%)';
@@ -103,17 +160,29 @@ function startOrder(len) {
 
 export function SwipePackages({ query }) {
   const getInitialTab = () => {
+    if (query?.tab === 'darjeeling') return 'darjeeling';
     if (query?.tab === 'experiences') return 'experiences';
-    return 'destinations';
+    if (query?.tab === 'pickup-dropoff') return 'pickup-dropoff';
+    if (query?.tab === 'fleet') return 'fleet';
+    // 'destinations' is the legacy key for what is now the by-place catalog.
+    return 'places';
   };
 
   const [activeTab, setActiveTab] = useState(getInitialTab);
-  const items = activeTab === 'experiences' ? AUDIENCE_CATEGORIES : destinations;
+  const items = activeTab === 'darjeeling'
+    ? DARJEELING_SIGHTS
+    : activeTab === 'experiences'
+      ? AUDIENCE_CATEGORIES
+      : activeTab === 'pickup-dropoff'
+        ? PICKUP_DROPOFF_ROUTES
+        : PLACE_GROUPS;
+  const tabCopy = TAB_COPY[activeTab] || TAB_COPY.places;
 
   // Deck rotation order (array of indexes into `items`)
   const [order, setOrder] = useState(() => startOrder(items.length));
   const [openItem, setOpenItem] = useState(null);
   const touchStartX = useRef(null);
+  const stageRef = useRef(null);
 
   useEffect(() => {
     setActiveTab(getInitialTab());
@@ -132,9 +201,54 @@ export function SwipePackages({ query }) {
     setOrder((o) => (o.length ? [o[o.length - 1], ...o.slice(0, -1)] : o));
   }, []);
 
+  // Advance the deck while scrolling over the stage (in addition to touch
+  // swipe and the arrow buttons). A short cooldown keeps one scroll gesture =
+  // one card so the slide animation can finish before the next move. Bound
+  // natively with { passive: false } so we can preventDefault the page jump.
+  useEffect(() => {
+    const el = stageRef.current;
+    if (!el) return undefined;
+
+    let locked = false;
+    const onWheel = (e) => {
+      const delta = Math.abs(e.deltaY) >= Math.abs(e.deltaX) ? e.deltaY : e.deltaX;
+      if (Math.abs(delta) < 12) return;
+      e.preventDefault();
+      if (locked) return;
+      locked = true;
+      if (delta > 0) next(); else prev();
+      window.setTimeout(() => { locked = false; }, 760);
+    };
+
+    el.addEventListener('wheel', onWheel, { passive: false });
+    return () => el.removeEventListener('wheel', onWheel);
+  }, [activeTab, next, prev]);
+
+  // Keyboard arrows when the stage is focused (desktop accessibility).
+  const onStageKeyDown = (e) => {
+    if (e.key === 'ArrowRight') { e.preventDefault(); next(); }
+    else if (e.key === 'ArrowLeft') { e.preventDefault(); prev(); }
+  };
+
   const handleTabChange = (tab) => {
     setActiveTab(tab);
+    setOpenItem(null);
     window.location.hash = `#/packages?tab=${tab}`;
+  };
+
+  const handlePrimaryAction = (item) => {
+    if (activeTab === 'pickup-dropoff') {
+      window.location.hash = `#/booking?from=${item.from}&to=${item.to}`;
+      return;
+    }
+    // Darjeeling sightseeing spots aren't packages themselves — open the
+    // Darjeeling place sheet so visitors can book a trip covering these stops.
+    if (activeTab === 'darjeeling') {
+      const darjeeling = PLACE_GROUPS.find((g) => g.id === 'darjeeling');
+      if (darjeeling) setOpenItem(darjeeling);
+      return;
+    }
+    setOpenItem(item);
   };
 
   // Lightweight touch swipe on the stage
@@ -155,18 +269,18 @@ export function SwipePackages({ query }) {
       <header className="hpkg-header">
         <div className="hpkg-header-left">
           <span className="badge badge-brand">
-            <i className="fa-solid fa-sparkles" /> {activeTab === 'experiences' ? 'Audience Tiers' : 'Corridor Explorer'}
+            <i className="fa-solid fa-sparkles" /> {tabCopy.badge}
           </span>
-          <h1 className="hpkg-title">{activeTab === 'experiences' ? 'Experiences' : 'Destinations'}</h1>
+          <h1 className="hpkg-title">{tabCopy.title}</h1>
         </div>
 
         <div className="hpkg-tabs">
           <button
             type="button"
-            className={`hpkg-tab ${activeTab === 'destinations' ? 'is-active' : ''}`}
-            onClick={() => handleTabChange('destinations')}
+            className={`hpkg-tab ${activeTab === 'places' ? 'is-active' : ''}`}
+            onClick={() => handleTabChange('places')}
           >
-            <i className="fa-solid fa-map-location-dot" /> Destinations
+            <i className="fa-solid fa-map-location-dot" /> Places
           </button>
           <button
             type="button"
@@ -175,59 +289,138 @@ export function SwipePackages({ query }) {
           >
             <i className="fa-solid fa-sparkles" /> Experiences
           </button>
+          <button
+            type="button"
+            className={`hpkg-tab ${activeTab === 'darjeeling' ? 'is-active' : ''}`}
+            onClick={() => handleTabChange('darjeeling')}
+          >
+            <i className="fa-solid fa-mountain-sun" /> Darjeeling Spots
+          </button>
+          <button
+            type="button"
+            className={`hpkg-tab ${activeTab === 'pickup-dropoff' ? 'is-active' : ''}`}
+            onClick={() => handleTabChange('pickup-dropoff')}
+          >
+            <i className="fa-solid fa-route" /> Pickup/Drop-off
+          </button>
+          <button
+            type="button"
+            className={`hpkg-tab ${activeTab === 'fleet' ? 'is-active' : ''}`}
+            onClick={() => handleTabChange('fleet')}
+          >
+            <i className="fa-solid fa-car" /> Fleet & Safety
+          </button>
         </div>
       </header>
 
-      <div className="hpkg-stage" onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
-        <div className="hpkg-slide">
-          {order.map((itemIdx) => {
-            const item = items[itemIdx];
-            if (!item) return null;
-            return (
-              <div
-                key={item.id}
-                className="hpkg-item"
-                style={{ backgroundImage: itemBackground(item) }}
-              >
-                <div className="hpkg-content">
-                  <div className="hpkg-chips">
-                    {item.permitRequired && (
-                      <span className="hpkg-chip hpkg-chip-warn"><i className="fa-solid fa-id-card" /> Permit</span>
-                    )}
-                    {item.elevation && (
-                      <span className="hpkg-chip"><i className="fa-solid fa-mountain" /> {item.elevation}</span>
-                    )}
+      {activeTab === 'fleet' ? (
+        <div className="container animate-fade-in" style={{ overflowY: 'auto', flex: 1, paddingBottom: '40px', marginTop: '20px' }}>
+          <div className="fleet-grid">
+            {vehicles.map(vh => (
+              <div key={vh.id} className="fleet-card glass-panel glass-panel-hover" style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+                <div className="fleet-card-image" style={{ backgroundImage: `url(${vh.image})` }}></div>
+                <div className="fleet-card-content" style={{ display: 'flex', flexDirection: 'column', flexGrow: 1 }}>
+                  <span className="badge badge-brand mb-1" style={{ alignSelf: 'flex-start' }}>{vh.capacity} | {vh.luggage.split(' ')[0]} Bags</span>
+                  <h3 className="fleet-name">{vh.name}</h3>
+                  <div className="fleet-models" style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '12px' }}>
+                    Models: {vh.models.join(", ")}
                   </div>
-                  <div className="hpkg-name">{item.name}</div>
-                  <div className="hpkg-des">{item.tagline}</div>
-                  <button
-                    type="button"
-                    className="hpkg-cta"
-                    onClick={(e) => { e.stopPropagation(); setOpenItem(item); }}
-                  >
-                    <i className="fa-solid fa-bolt" aria-hidden="true" />
-                    <span>Book Now</span>
-                  </button>
+                  <ul className="fleet-features-list" style={{ flexGrow: 1 }}>
+                    {vh.features.map(feat => (
+                      <li key={feat}>
+                        <i className="fa-solid fa-circle-check text-brand"></i> {feat}
+                      </li>
+                    ))}
+                  </ul>
+                  {vh.restrictions && vh.restrictions.length > 0 && (
+                    <div style={{ marginTop: '20px', paddingTop: '16px', borderTop: '1px solid var(--glass-border)' }}>
+                      <strong style={{ fontSize: '0.75rem', textTransform: 'uppercase', color: 'var(--text-muted)', display: 'block', marginBottom: '6px' }}>Himalayan Access Restrictions</strong>
+                      <ul style={{ listStyle: 'none', paddingLeft: 0, fontSize: '0.82rem', color: '#fda4af', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                        {vh.restrictions.map((res, i) => (
+                          <li key={i} style={{ display: 'flex', gap: '8px', alignItems: 'flex-start' }}>
+                            <i className="fa-solid fa-triangle-exclamation" style={{ marginTop: '3px', fontSize: '0.75rem' }}></i>
+                            <span>{res}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                  {vh.id.startsWith("suv") && (
+                    <span className="fleet-suv-tag"><i className="fa-solid fa-snowflake"></i> North Sikkim Approved</span>
+                  )}
                 </div>
               </div>
-            );
-          })}
-        </div>
-
-        <div className="hpkg-nav" role="group" aria-label="Destination slider navigation">
-          <button type="button" className="hpkg-arrow" onClick={prev} aria-label="Previous destination">
-            <i className="fa-solid fa-chevron-left" aria-hidden="true" />
-          </button>
-          <div className="hpkg-counter">
-            <span className="hpkg-counter-cur">{activeIndex + 1}</span>
-            <span className="hpkg-counter-sep">/</span>
-            <span>{items.length}</span>
+            ))}
           </div>
-          <button type="button" className="hpkg-arrow" onClick={next} aria-label="Next destination">
-            <i className="fa-solid fa-chevron-right" aria-hidden="true" />
-          </button>
         </div>
-      </div>
+      ) : (
+        <div
+          className="hpkg-stage"
+          ref={stageRef}
+          tabIndex={0}
+          role="region"
+          aria-roledescription="carousel"
+          aria-label={tabCopy.title}
+          onKeyDown={onStageKeyDown}
+          onTouchStart={onTouchStart}
+          onTouchEnd={onTouchEnd}
+        >
+          <div className="hpkg-slide">
+            {order.map((itemIdx) => {
+              const item = items[itemIdx];
+              if (!item) return null;
+              return (
+                <div
+                  key={item.id}
+                  className="hpkg-item"
+                  style={{ backgroundImage: itemBackground(item) }}
+                >
+                  <div className="hpkg-content">
+                    <div className="hpkg-chips">
+                      {item.comingSoon && (
+                        <span className="hpkg-chip hpkg-chip-warn"><i className="fa-solid fa-hourglass-half" /> Coming Soon</span>
+                      )}
+                      {item.chip && (
+                        <span className="hpkg-chip"><i className="fa-solid fa-camera-retro" /> {item.chip}</span>
+                      )}
+                      {item.permitRequired && (
+                        <span className="hpkg-chip hpkg-chip-warn"><i className="fa-solid fa-id-card" /> Permit</span>
+                      )}
+                      {item.elevation && (
+                        <span className="hpkg-chip"><i className="fa-solid fa-mountain" /> {item.elevation}</span>
+                      )}
+                    </div>
+                    <div className="hpkg-name">{item.name}</div>
+                    <div className="hpkg-des">{item.tagline}</div>
+                    <button
+                      type="button"
+                      className="hpkg-cta"
+                      onClick={(e) => { e.stopPropagation(); handlePrimaryAction(item); }}
+                    >
+                      <i className={`fa-solid ${item.comingSoon ? 'fa-hourglass-half' : 'fa-bolt'}`} aria-hidden="true" />
+                      <span>{item.comingSoon ? 'Coming Soon' : (activeTab === 'pickup-dropoff' ? 'Book Transfer' : 'Book Now')}</span>
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          <div className="hpkg-nav" role="group" aria-label="Destination slider navigation">
+            <button type="button" className="hpkg-arrow" onClick={prev} aria-label="Previous destination">
+              <i className="fa-solid fa-chevron-left" aria-hidden="true" />
+            </button>
+            <div className="hpkg-counter">
+              <span className="hpkg-counter-cur">{activeIndex + 1}</span>
+              <span className="hpkg-counter-sep">/</span>
+              <span>{items.length}</span>
+            </div>
+            <button type="button" className="hpkg-arrow" onClick={next} aria-label="Next destination">
+              <i className="fa-solid fa-chevron-right" aria-hidden="true" />
+            </button>
+          </div>
+        </div>
+      )}
 
       <AnimatePresence>
         {openItem && (
@@ -245,7 +438,10 @@ export function SwipePackages({ query }) {
 function BottomSheet({ item, activeTab, onClose }) {
   const pkgs = activeTab === 'experiences'
     ? packages.filter((p) => item.packageIds.includes(p.id))
-    : packages.filter((p) => p.destinationId === item.id);
+    : item.members
+      // Place groups roll up the packages of every member destination.
+      ? packages.filter((p) => item.members.includes(p.destinationId))
+      : packages.filter((p) => p.destinationId === item.id);
 
   // Group by duration tier (One-Time → Half-Day → Full-Day → 2-Day → Multi-Day)
   const groups = CATEGORY_ORDER
@@ -292,11 +488,11 @@ function BottomSheet({ item, activeTab, onClose }) {
           </div>
         )}
 
-        {pkgs.length === 0 ? (
+        {(pkgs.length === 0 || item.comingSoon) ? (
           <div className="sw-sheet-empty">
             <i className="fa-solid fa-hourglass-half" />
-            <h3>Packages Coming Soon</h3>
-            <p>We are curating spectacular bespoke itineraries for this destination. Enquire directly on WhatsApp to book.</p>
+            <h3>Coming Soon</h3>
+            <p>We are curating spectacular bespoke itineraries for {item.name}. Enquire directly on WhatsApp and we'll let you know the moment it opens.</p>
             <a
               href={`https://wa.me/919907219843?text=${encodeURIComponent(`Hi! I'd like to plan a custom trip for ${item.name}.`)}`}
               target="_blank"
@@ -336,14 +532,34 @@ function BottomSheet({ item, activeTab, onClose }) {
                   </div>
                 )}
                 <div className="sw-pkg-foot">
-                  <div className="sw-pkg-price">
-                    <span className="sw-pkg-price-lbl">Starting Fare</span>
-                    <span className="sw-pkg-price-val">₹{(pkg.priceSedan || pkg.priceSuv).toLocaleString('en-IN')}</span>
-                  </div>
-                  <a href={`#/booking?package=${pkg.id}`} className="sw-pkg-cta">
-                    <span>Book Now</span>
-                    <i className="fa-solid fa-arrow-right" aria-hidden="true" />
-                  </a>
+                  {pkg.isComingSoon ? (
+                    <>
+                      <div className="sw-pkg-price">
+                        <span className="sw-pkg-price-lbl">Status</span>
+                        <span className="sw-pkg-price-val">Coming Soon</span>
+                      </div>
+                      <a
+                        href={`https://wa.me/919907219843?text=${encodeURIComponent(`Hi! I'd like to know when the "${pkg.name}" tour will be available.`)}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="sw-pkg-cta"
+                      >
+                        <span>Enquire</span>
+                        <i className="fa-brands fa-whatsapp" aria-hidden="true" />
+                      </a>
+                    </>
+                  ) : (
+                    <>
+                      <div className="sw-pkg-price">
+                        <span className="sw-pkg-price-lbl">Starting Fare</span>
+                        <span className="sw-pkg-price-val">₹{(pkg.priceSedan || pkg.priceSuv).toLocaleString('en-IN')}</span>
+                      </div>
+                      <a href={`#/booking?package=${pkg.id}`} className="sw-pkg-cta">
+                        <span>Book Now</span>
+                        <i className="fa-solid fa-arrow-right" aria-hidden="true" />
+                      </a>
+                    </>
+                  )}
                 </div>
               </article>
                 ))}
