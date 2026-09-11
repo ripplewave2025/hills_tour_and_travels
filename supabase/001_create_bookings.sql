@@ -23,21 +23,49 @@ create table if not exists public.bookings (
 -- Index for admin dashboard queries (most recent first)
 create index if not exists bookings_created_at_idx on public.bookings (created_at desc);
 
--- Row-Level Security: anyone (anon key) can INSERT their own booking.
--- Only service-role (your backend / Supabase dashboard) can SELECT all rows.
+-- =====================================================================
+-- Row-Level Security
+-- =====================================================================
+-- Model:
+--   * anon  (public site visitors)  -> may INSERT a booking, nothing else.
+--   * authenticated (the operator, signed in via Supabase Auth on
+--     #/admin/bookings) -> may SELECT and DELETE all bookings.
+--
+-- The bookings table holds customer PII (name / phone / email / itinerary),
+-- so anon MUST NOT be able to SELECT. The anon key ships in the public JS
+-- bundle, so a `to anon using (true)` SELECT policy would expose every
+-- customer's contact details to anyone on the internet.
+--
+-- DEPLOY NOTE: re-run this whole file (the drops below make it idempotent),
+-- then create the operator login under Authentication → Users in the
+-- Supabase dashboard. Until a user exists and signs in on the admin page,
+-- the dashboard will simply show no rows — public booking inserts keep working.
+-- =====================================================================
 alter table public.bookings enable row level security;
 
--- Allow anonymous visitors to insert bookings
+-- Clean up any earlier permissive policies so this script can be re-run safely.
+drop policy if exists "anon can insert bookings" on public.bookings;
+drop policy if exists "anon can read bookings"   on public.bookings;
+drop policy if exists "authed can read bookings"   on public.bookings;
+drop policy if exists "authed can delete bookings" on public.bookings;
+
+-- Public visitors may submit a booking (INSERT only — no read-back).
 create policy "anon can insert bookings"
   on public.bookings
   for insert
   to anon
   with check (true);
 
--- Allow the admin page (also using anon key for now) to read all bookings.
--- Swap this for a tighter policy once you add auth.
-create policy "anon can read bookings"
+-- The signed-in operator may read every booking.
+create policy "authed can read bookings"
   on public.bookings
   for select
-  to anon
+  to authenticated
+  using (true);
+
+-- The signed-in operator may delete bookings.
+create policy "authed can delete bookings"
+  on public.bookings
+  for delete
+  to authenticated
   using (true);

@@ -3246,6 +3246,9 @@ a, button, [role="button"], select, input {
   position: relative;
   width: 100%;
   height: 100%;
+  /* Keyed by activeTab in JSX, so this fade replays only on a tab switch,
+     not on next/prev within a tab — smooth, consistent tab swapping. */
+  animation: hpkgFade 0.32s ease;
 }
 
 .hpkg-item {
@@ -3395,6 +3398,11 @@ a, button, [role="button"], select, input {
   to { opacity: 1; transform: none; filter: blur(0); }
 }
 
+@keyframes hpkgFade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
 /* Mobile: full-bleed stage, smaller queued cards */
 @media (max-width: 768px) {
   .hpkg-root { padding: 24px 0 28px; }
@@ -3416,6 +3424,7 @@ a, button, [role="button"], select, input {
 
 @media (prefers-reduced-motion: reduce) {
   .hpkg-item { transition: opacity 0.3s ease; }
+  .hpkg-slide { animation: none; }
   .hpkg-slide .hpkg-item:nth-child(2) .hpkg-name,
   .hpkg-slide .hpkg-item:nth-child(2) .hpkg-des,
   .hpkg-slide .hpkg-item:nth-child(2) .hpkg-cta { animation: none; }
@@ -4335,3 +4344,25 @@ a, button, [role="button"], select, input {
     display: none !important;
   }
 }
+
+/* --- Dispatch Mode & Now Option (Uber / Ola Style) --- */
+.dispatch-mode-btn {
+  user-select: none;
+  -webkit-user-select: none;
+}
+.dispatch-mode-btn:hover:not(.active) {
+  background: rgba(255, 255, 255, 0.07) !important;
+  color: #ffffff !important;
+}
+.now-chip-btn {
+  user-select: none;
+  transition: transform var(--transition-fast), background var(--transition-fast), border-color var(--transition-fast);
+}
+.now-chip-btn:hover {
+  transform: scale(1.06);
+  border-color: var(--brand-color) !important;
+}
+.now-status-banner {
+  box-shadow: 0 4px 20px rgba(34, 197, 94, 0.12);
+}
+

@@ -8,6 +8,21 @@ import { packages } from '../data/packages.js';
 import { SearchBar } from '../components/search-bar.js';
 import { PriceCalculator } from '../components/price-calculator.js';
 import { CustomerStore } from '../utils/customer-store.js';
+import { escapeHtml } from '../utils/escape.js';
+
+// Today's date as a LOCAL YYYY-MM-DD (en-CA gives ISO ordering without the
+// UTC shift of toISOString(), which can be a day off for IST users).
+function todayLocalISO() {
+  return new Date().toLocaleDateString('en-CA');
+}
+
+// Current local time as HH:MM for immediate dispatch
+function nowLocalTimeHHMM() {
+  const d = new Date();
+  const hh = String(d.getHours()).padStart(2, '0');
+  const mm = String(d.getMinutes()).padStart(2, '0');
+  return `${hh}:${mm}`;
+}
 
 // Helper: Resolve any terminal ID to its display name by searching
 // both 'from' and 'to' columns across all routes
@@ -26,16 +41,26 @@ function findRouteSymmetric(fromId, toId) {
       || routes.find(r => r.from === toId && r.to === fromId);
 }
 
+// Helper: max seats a vehicle holds, parsed from its free-text capacity
+// (e.g. "4 Passengers" -> 4, "6–7 Passengers" -> 7).
+function vehicleSeats(vh) {
+  const nums = String(vh && vh.capacity || '').match(/\d+/g);
+  return nums && nums.length ? Math.max(...nums.map(Number)) : 99;
+}
+
 export const Booking = {
   render(params, query) {
     this.currentStep = 1;
+    this.expressBookNow = false;
+    const isNowRequested = !!(query && (query.now === "true" || query.now === "1"));
     this.state = {
-      from: query.from || "",
-      to: query.to || "",
-      packageId: query.package || "",
-      date: "",
-      time: "08:00",
-      passengers: parseInt(query.passengers) || 2,
+      from: (query && query.from) || "",
+      to: (query && query.to) || "",
+      packageId: (query && query.package) || "",
+      isNow: isNowRequested,
+      date: isNowRequested ? todayLocalISO() : "",
+      time: isNowRequested ? nowLocalTimeHHMM() : "08:00",
+      passengers: parseInt(query && query.passengers) || 2,
       days: 1,
       vehicleId: "suv-rugged",
       addons: { guide: false, extraBags: false },
@@ -166,19 +191,37 @@ export const Booking = {
     }
   },
 
-  // Is this route inside a high-altitude permit zone (SUV-only)?
-  isPermitRoute() {
-    const matchedRoute = findRouteSymmetric(this.state.from, this.state.to);
-    return !!(matchedRoute?.permitRequired
-      || (this.state.packageId && (this.state.packageId.includes("tsomgo")
-        || this.state.packageId.includes("nathula")
-        || this.state.packageId.includes("north-expedition"))));
+  // The guided package currently selected (if any).
+  selectedPackage() {
+    return this.state.packageId ? packages.find(p => p.id === this.state.packageId) : null;
+  },
+
+  // The matched route, only if it is an international (Nepal/Bhutan) crossing.
+  crossBorderRoute() {
+    const r = findRouteSymmetric(this.state.from, this.state.to);
+    return (r && r.isCrossBorder) ? r : null;
+  },
+
+  // Sikkim high-altitude PAP zone (Tsomgo / Nathula / North Sikkim): military
+  // check-posts that reject Aadhaar/PAN and legally allow rugged SUVs only.
+  // NOTE: cross-border routes are NOT this — they carry their own document
+  // rules and may still offer a sedan.
+  isSikkimPermitZone() {
+    const id = this.state.packageId || "";
+    return id.includes("tsomgo") || id.includes("nathula") || id.includes("north-expedition");
+  },
+
+  // Must the vehicle be a rugged SUV? True for Sikkim PAP zones and for
+  // rough-terrain packages explicitly flagged suvOnly (e.g. Reshi Khola).
+  requiresSuv() {
+    const pkg = this.selectedPackage();
+    return this.isSikkimPermitZone() || !!(pkg && pkg.suvOnly);
   },
 
   // Recommend the smallest comfortable vehicle for the group size.
-  // Permit zones legally require a rugged SUV regardless of group size.
-  recommendVehicleId(passengers, isPermitRequired) {
-    if (isPermitRequired) return "suv-rugged";
+  // SUV-only contexts get a rugged SUV regardless of group size.
+  recommendVehicleId(passengers, mustBeSuv) {
+    if (mustBeSuv) return "suv-rugged";
     const p = passengers || 1;
     if (p <= 4) return "sedan";
     if (p <= 6) return "muv-mid";
@@ -187,14 +230,14 @@ export const Booking = {
 
   // Apply the auto-recommendation unless the traveller chose a vehicle by hand.
   applyVehicleRecommendation() {
-    const isPermit = this.isPermitRoute();
-    // Safety: permit zones are SUV-only — correct even a manual non-SUV pick.
-    if (isPermit && !String(this.state.vehicleId).startsWith("suv")) {
+    const mustBeSuv = this.requiresSuv();
+    // Safety: SUV-only contexts — correct even a manual non-SUV pick.
+    if (mustBeSuv && !String(this.state.vehicleId).startsWith("suv")) {
       this.state.vehicleId = "suv-rugged";
       return;
     }
     if (this.vehicleManuallyChosen) return;
-    this.state.vehicleId = this.recommendVehicleId(this.state.passengers, isPermit);
+    this.state.vehicleId = this.recommendVehicleId(this.state.passengers, mustBeSuv);
   },
 
   // Shared step-1 validation used by both "Book Now" and "Customize".
@@ -203,7 +246,25 @@ export const Booking = {
     const fail = (msg) => { if (err) { err.innerText = msg; err.style.display = "block"; } return false; };
     if (!this.state.from || !this.state.to) return fail("Please specify a valid Pick-up Location and Drop-off Location.");
     if (this.state.from === this.state.to) return fail("Pick-up Location and Drop-off Location cannot be the same.");
-    if (!this.state.date) return fail("Please specify a valid departure date.");
+    
+    // Frictionless Uber/Ola flow: If user hasn't set a date, auto-default to Ride Now (today + current time)
+    if (!this.state.date) {
+      this.state.isNow = true;
+      this.state.date = todayLocalISO();
+      this.state.time = nowLocalTimeHHMM();
+    }
+
+    // Don't let a route we can't price advance to a ₹0 receipt — offer a
+    // WhatsApp custom-quote path instead of saving an unbookable order.
+    const summary = this.getPricingSummary();
+    if (!summary || !summary.total) {
+      const waText = encodeURIComponent(`Hi! I'd like a custom quote for ${getTerminalName(this.state.from)} to ${getTerminalName(this.state.to)}.`);
+      if (err) {
+        err.innerHTML = `We don't have an instant fare for this route yet — <a href="https://wa.me/919907219843?text=${waText}" target="_blank" rel="noopener noreferrer" style="color:var(--brand-color);text-decoration:underline;">WhatsApp us for a custom quote →</a>`;
+        err.style.display = "block";
+      }
+      return false;
+    }
     if (err) err.style.display = "none";
     return true;
   },
@@ -216,15 +277,15 @@ export const Booking = {
     panel.innerHTML = `
       <div class="animate-fade-in">
         <h2 style="font-size: 1.75rem; margin-bottom: 8px;"><i class="fa-solid fa-route text-brand"></i> Mountain Terminal & Schedule</h2>
-        <p style="color: var(--text-secondary); margin-bottom: 30px;">Input your starting and ending points, dates, and passengers to compute dynamic fares.</p>
+        <p style="color: var(--text-secondary); margin-bottom: 24px;">Input your starting and ending points, dates, and passengers to compute dynamic fares.</p>
         
         ${isPackage ? `
-          <div class="badge badge-brand mb-2" style="padding: 10px 16px; font-size: 0.85rem;">
+          <div class="badge badge-brand mb-3" style="padding: 10px 16px; font-size: 0.85rem;">
             <i class="fa-solid fa-sparkles"></i> Guided Package Selected: <strong>${pkg.name}</strong>
           </div>
         ` : ''}
 
-        <div class="grid grid-2" style="margin-bottom: 24px;">
+        <div class="grid grid-2" style="margin-bottom: 20px;">
           <div class="form-group">
             <label class="form-label">Pick-up Location (Ride From)</label>
             <div id="booking-from-container">
@@ -239,16 +300,44 @@ export const Booking = {
           </div>
         </div>
 
-        <div class="grid grid-2" style="margin-bottom: 24px;">
+        <!-- Booking Option: Ride Now vs Schedule Later (Uber / Ola Style) -->
+        <div style="margin-bottom: 18px;">
+          <label class="form-label" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+            <span><i class="fa-solid fa-clock-rotate-left text-brand"></i> Departure Schedule</span>
+            <span style="font-size: 0.75rem; color: var(--text-muted);">${this.state.isNow ? '⚡ Immediate dispatch active' : 'Choose date & time'}</span>
+          </label>
+          <div class="dispatch-mode-toggle" style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; background: rgba(255,255,255,0.03); padding: 5px; border-radius: 12px; border: 1px solid var(--glass-border);">
+            <button type="button" id="step1-mode-now" class="dispatch-mode-btn ${this.state.isNow ? 'active' : ''}" style="padding: 10px 14px; border-radius: 9px; font-size: 0.88rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s ease; border: 1px solid ${this.state.isNow ? 'var(--brand-color)' : 'transparent'}; background: ${this.state.isNow ? 'linear-gradient(135deg, rgba(245, 158, 11, 0.25), rgba(245, 158, 11, 0.12))' : 'transparent'}; color: ${this.state.isNow ? '#fbbf24' : 'var(--text-secondary)'};">
+              <i class="fa-solid fa-bolt" style="color: ${this.state.isNow ? '#fbbf24' : 'inherit'};"></i> <span>Ride Now (Immediate)</span>
+            </button>
+            <button type="button" id="step1-mode-schedule" class="dispatch-mode-btn ${!this.state.isNow ? 'active' : ''}" style="padding: 10px 14px; border-radius: 9px; font-size: 0.88rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s ease; border: 1px solid ${!this.state.isNow ? 'rgba(255,255,255,0.2)' : 'transparent'}; background: ${!this.state.isNow ? 'rgba(255, 255, 255, 0.08)' : 'transparent'}; color: ${!this.state.isNow ? '#ffffff' : 'var(--text-secondary)'};">
+              <i class="fa-solid fa-calendar-days"></i> <span>Schedule for Later</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="grid grid-2" style="margin-bottom: ${this.state.isNow ? '12px' : '24px'};">
           <div class="form-group">
-            <label class="form-label">Transit Date</label>
-            <input type="date" id="step1-date" class="input-glass" value="${this.state.date}" min="${new Date().toISOString().split('T')[0]}" />
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+              <label class="form-label" style="margin-bottom: 0;">Transit Date</label>
+              <button type="button" id="step1-now-quick-btn" title="Set to Today & Current Time" style="font-size: 0.72rem; padding: 2px 10px; border-radius: 999px; border: 1px solid ${this.state.isNow ? 'var(--brand-color)' : 'rgba(255,255,255,0.2)'}; background: ${this.state.isNow ? 'var(--brand-color)' : 'rgba(255,255,255,0.06)'}; color: ${this.state.isNow ? '#000000' : 'var(--text-primary)'}; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; transition: all 0.15s ease;">
+                <i class="fa-solid fa-bolt" style="font-size: 0.65rem;"></i> Now
+              </button>
+            </div>
+            <input type="date" id="step1-date" class="input-glass" value="${this.state.date}" min="${todayLocalISO()}" />
           </div>
           <div class="form-group">
             <label class="form-label">Dispatch Time</label>
             <input type="time" id="step1-time" class="input-glass" value="${this.state.time}" />
           </div>
         </div>
+
+        ${this.state.isNow ? `
+          <div class="now-status-banner animate-fade-in" style="margin-bottom: 24px; padding: 10px 14px; border-radius: 10px; background: rgba(34, 197, 94, 0.12); border: 1px solid rgba(34, 197, 94, 0.3); display: flex; align-items: center; gap: 10px; font-size: 0.84rem; color: #86efac;">
+            <i class="fa-solid fa-bolt-lightning" style="color: #4ade80; font-size: 1rem;"></i>
+            <span><strong>Immediate Dispatch Active:</strong> Nearest mountain driver dispatched for pickup within ~15–20 minutes.</span>
+          </div>
+        ` : ''}
 
         <div class="grid grid-2" style="margin-bottom: 30px;">
           <div class="form-group">
@@ -269,7 +358,7 @@ export const Booking = {
 
         <div style="border-top: 1px solid var(--glass-border); padding-top: 24px;">
           <button class="btn btn-primary btn-lg w-100" id="step1-booknow-btn" style="font-size: 1.1rem; padding: 16px; box-shadow: 0 8px 24px rgba(245, 158, 11, 0.3);">
-            <i class="fa-solid fa-bolt"></i> <span>Book Now</span> <i class="fa-solid fa-arrow-right"></i>
+            <i class="fa-solid fa-bolt"></i> <span>${this.state.isNow ? 'Book Now (Instant Dispatch)' : 'Book Now'}</span> <i class="fa-solid fa-arrow-right"></i>
           </button>
           <p style="text-align: center; font-size: 0.82rem; color: var(--text-muted); margin: 12px 0 16px 0;">
             We'll auto-match the right vehicle for <strong id="booknow-pax-count">${this.state.passengers}</strong> traveler${this.state.passengers > 1 ? 's' : ''} — you can still change it on the next step.
@@ -298,9 +387,45 @@ export const Booking = {
       this.toSearch.setValue(this.state.to, getTerminalName(this.state.to));
     }
 
+    // Dispatch Mode Event Listeners
+    const modeNowBtn = document.getElementById("step1-mode-now");
+    const modeSchedBtn = document.getElementById("step1-mode-schedule");
+    const nowQuickBtn = document.getElementById("step1-now-quick-btn");
+
+    if (modeNowBtn) {
+      modeNowBtn.addEventListener("click", () => {
+        this.state.isNow = true;
+        this.state.date = todayLocalISO();
+        this.state.time = nowLocalTimeHHMM();
+        this.updateStepView();
+        this.updateSummary();
+      });
+    }
+
+    if (modeSchedBtn) {
+      modeSchedBtn.addEventListener("click", () => {
+        this.state.isNow = false;
+        this.updateStepView();
+        this.updateSummary();
+      });
+    }
+
+    if (nowQuickBtn) {
+      nowQuickBtn.addEventListener("click", () => {
+        this.state.isNow = true;
+        this.state.date = todayLocalISO();
+        this.state.time = nowLocalTimeHHMM();
+        this.updateStepView();
+        this.updateSummary();
+      });
+    }
+
     // Input binders
     document.getElementById("step1-date").addEventListener("change", (e) => {
       this.state.date = e.target.value;
+      if (this.state.date !== todayLocalISO()) {
+        this.state.isNow = false;
+      }
       this.updateSummary();
     });
     document.getElementById("step1-time").addEventListener("change", (e) => {
@@ -323,6 +448,7 @@ export const Booking = {
     // PRIORITY CTA — "Book Now": auto-match vehicle, jump straight to checkout.
     document.getElementById("step1-booknow-btn").addEventListener("click", () => {
       if (!this.validateStep1()) return;
+      this.expressBookNow = true;
       this.applyVehicleRecommendation(); // ensure best-fit vehicle is set
       this.currentStep = 4;              // skip fleet + add-ons for speed
       this.updateStepView();
@@ -331,6 +457,7 @@ export const Booking = {
     // Secondary path — "Customize": step through fleet + add-ons.
     document.getElementById("step1-next-btn").addEventListener("click", () => {
       if (!this.validateStep1()) return;
+      this.expressBookNow = false;
       this.currentStep = 2;
       this.updateStepView();
     });
@@ -341,27 +468,42 @@ export const Booking = {
     const routeKey = this.state.from + "->" + this.state.to;
     const matchedRoute = findRouteSymmetric(this.state.from, this.state.to);
     
-    // Check if Sikkim High Altitude PAP permit is required
-    const isPermitRequired = matchedRoute?.permitRequired || this.state.packageId?.includes("tsomgo") || this.state.packageId?.includes("nathula") || this.state.packageId?.includes("north-expedition");
+    const sikkimPap = this.isSikkimPermitZone();
+    const cbRoute = matchedRoute && matchedRoute.isCrossBorder ? matchedRoute : null;
+    const mustBeSuv = this.requiresSuv();
+    const pkg = this.selectedPackage();
 
-    // Filter vehicle lists based on high-altitude regulations (SUVs only!)
+    // Filter vehicles by SUV-only terrain rules AND by passenger capacity.
     const eligibleVehicles = vehicles.map(vh => {
-      const isDisallowed = isPermitRequired && !vh.id.startsWith("suv");
-      return { ...vh, isDisallowed };
+      const wrongTerrain = mustBeSuv && !vh.id.startsWith("suv");
+      const tooSmall = vehicleSeats(vh) < this.state.passengers;
+      return { ...vh, isDisallowed: wrongTerrain || tooSmall, disallowReason: wrongTerrain ? "terrain" : (tooSmall ? "capacity" : null) };
     });
 
     // Best-fit vehicle for the current group size (highlighted, not forced)
-    const recommendedId = this.recommendVehicleId(this.state.passengers, isPermitRequired);
+    const recommendedId = this.recommendVehicleId(this.state.passengers, mustBeSuv);
 
     panel.innerHTML = `
       <div class="animate-fade-in">
         <h2 style="font-size: 1.75rem; margin-bottom: 8px;"><i class="fa-solid fa-car-rear text-brand"></i> Mountain Fleet Selection</h2>
         <p style="color: var(--text-secondary); margin-bottom: 24px;">Select a vehicle suited to your travel size and mountain destination.</p>
 
-        ${isPermitRequired ? `
+        ${sikkimPap ? `
           <div class="badge badge-danger mb-3 animate-bounce-slow" style="display: flex; gap: 10px; padding: 12px 18px; border-radius: var(--radius-md); text-align: left; text-transform: none; font-size: 0.85rem; line-height: 1.4; color: white;">
             <i class="fa-solid fa-triangle-exclamation" style="font-size: 1.25rem;"></i>
-            <span><strong>High-Altitude Regulatory Warning:</strong> Goverment border checkpoints legally restrict hatchbacks, sedans, and light MUVs from entering Sikkim permit areas. <strong>Only rugged 4WD SUVs are dispatched.</strong></span>
+            <span><strong>High-Altitude Regulatory Warning:</strong> Government border checkpoints legally restrict hatchbacks, sedans, and light MUVs from entering Sikkim permit areas. <strong>Only rugged 4WD SUVs are dispatched.</strong></span>
+          </div>
+        ` : ''}
+        ${(!sikkimPap && pkg && pkg.suvOnly) ? `
+          <div class="badge badge-danger mb-3" style="display: flex; gap: 10px; padding: 12px 18px; border-radius: var(--radius-md); text-align: left; text-transform: none; font-size: 0.85rem; line-height: 1.4; color: white;">
+            <i class="fa-solid fa-mountain" style="font-size: 1.25rem;"></i>
+            <span><strong>Rough-Terrain Route:</strong> This destination is reached by steep, unpaved tracks. <strong>A rugged 4WD SUV is required.</strong></span>
+          </div>
+        ` : ''}
+        ${cbRoute ? `
+          <div class="badge mb-3" style="display: flex; gap: 10px; padding: 12px 18px; border-radius: var(--radius-md); text-align: left; text-transform: none; font-size: 0.85rem; line-height: 1.4; color: white; background: rgba(59,130,246,0.18); border: 1px solid rgba(59,130,246,0.45);">
+            <i class="fa-solid fa-passport" style="font-size: 1.25rem;"></i>
+            <span><strong>International Crossing (${cbRoute.country === 'nepal' ? 'Nepal' : 'Bhutan'}):</strong> Carry a valid passport / accepted travel document.${cbRoute.alert ? ' ' + escapeHtml(cbRoute.alert) : ''}</span>
           </div>
         ` : ''}
 
@@ -382,7 +524,7 @@ export const Booking = {
                 </div>
                 
                 ${vh.isDisallowed ? `
-                  <div class="fleet-disallowed-tag"><i class="fa-solid fa-ban"></i> Banned for High Altitudes</div>
+                  <div class="fleet-disallowed-tag"><i class="fa-solid fa-ban"></i> ${vh.disallowReason === 'capacity' ? `Too small for ${this.state.passengers} travellers` : 'SUV-only route'}</div>
                 ` : ''}
               </div>
             </div>
@@ -587,7 +729,7 @@ export const Booking = {
     }
 
     document.getElementById("step4-prev-btn").addEventListener("click", () => {
-      this.currentStep = 3;
+      this.currentStep = this.expressBookNow ? 1 : 3;
       this.updateStepView();
     });
 
@@ -635,7 +777,7 @@ export const Booking = {
       pickup: getTerminalName(this.state.from),
       drop: getTerminalName(this.state.to),
       date: this.state.date,
-      time: this.state.time,
+      time: this.state.isNow ? `Now (${this.state.time})` : this.state.time,
       vehicle: vehicleName,
       passengers: this.state.passengers,
       days: this.state.days,
@@ -667,7 +809,7 @@ export const Booking = {
         </div>
 
         <h2 style="font-size: 2.25rem; font-weight: 800; background: linear-gradient(135deg, white, var(--color-success)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Booking Confirmed!</h2>
-        <p style="color: var(--text-secondary); max-width: 560px; margin: 10px auto 30px auto;">Your 50% advance payment has been simulated successfully. Final fare verification and dispatch parameters have been routed to operations.</p>
+        <p style="color: var(--text-secondary); max-width: 560px; margin: 10px auto 30px auto;">${this.state.isNow ? 'Your ride request has been received for immediate dispatch. Driver is being routed to your terminal.' : 'Your 50% advance payment has been simulated successfully. Final fare verification and dispatch parameters have been routed to operations.'}</p>
 
         <!-- Premium Ticket Receipt -->
         <div class="ticket-receipt glass-panel mb-5" style="text-align: left; overflow: hidden; position: relative;">
@@ -682,7 +824,7 @@ export const Booking = {
               </div>
               <div style="text-align: right;">
                 <span style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase;">Status</span>
-                <div><span class="badge badge-success"><i class="fa-solid fa-check"></i> advance paid</span></div>
+                <div><span class="badge badge-success"><i class="fa-solid fa-check"></i> ${this.state.isNow ? 'immediate dispatch' : 'advance paid'}</span></div>
               </div>
             </div>
 
@@ -690,19 +832,21 @@ export const Booking = {
             <div class="grid grid-2" style="gap: 20px 40px; margin-bottom: 24px;">
               <div>
                 <span style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase;">Traveler</span>
-                <div style="font-size: 0.95rem; font-weight: 600; color: var(--text-primary); margin-top: 4px;">${this.state.userDetails.name}</div>
+                <div style="font-size: 0.95rem; font-weight: 600; color: var(--text-primary); margin-top: 4px;">${escapeHtml(this.state.userDetails.name)}</div>
               </div>
               <div>
                 <span style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase;">Phone / Active WhatsApp</span>
-                <div style="font-size: 0.95rem; font-weight: 600; color: var(--text-primary); margin-top: 4px;">${this.state.userDetails.phone}</div>
+                <div style="font-size: 0.95rem; font-weight: 600; color: var(--text-primary); margin-top: 4px;">${escapeHtml(this.state.userDetails.phone)}</div>
               </div>
               <div>
                 <span style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase;">Route Corridor</span>
-                <div style="font-size: 0.95rem; font-weight: 600; color: var(--text-primary); margin-top: 4px;">${getTerminalName(this.state.from).split(" (")[0]} to ${getTerminalName(this.state.to)}</div>
+                <div style="font-size: 0.95rem; font-weight: 600; color: var(--text-primary); margin-top: 4px;">${escapeHtml(getTerminalName(this.state.from).split(" (")[0])} to ${escapeHtml(getTerminalName(this.state.to))}</div>
               </div>
               <div>
                 <span style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase;">Dispatch Schedule</span>
-                <div style="font-size: 0.95rem; font-weight: 600; color: var(--text-primary); margin-top: 4px;">${this.state.date} @ ${this.state.time}</div>
+                <div style="font-size: 0.95rem; font-weight: 600; color: ${this.state.isNow ? '#4ade80' : 'var(--text-primary)'}; margin-top: 4px;">
+                  ${this.state.isNow ? `⚡ IMMEDIATE DISPATCH (Today @ ${this.state.time})` : `${this.state.date} @ ${this.state.time}`}
+                </div>
               </div>
               <div>
                 <span style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase;">Travellers / Duration</span>
@@ -774,7 +918,7 @@ export const Booking = {
         `*Reference ID:* ${bookingId}`,
         `*Customer:* ${this.state.userDetails.name}`,
         `*Route:* ${fromName} to ${toName}`,
-        `*Date/Time:* ${this.state.date} @ ${this.state.time}`,
+        `*Date/Time:* ${this.state.isNow ? `⚡ IMMEDIATE DISPATCH / NOW (Today @ ${this.state.time})` : `${this.state.date} @ ${this.state.time}`}`,
         `*Vehicle:* ${vehicleName}`,
         `*Estimated Total:* INR ${Math.round(summary.total || 0)}/-`,
         `*Advance Paid (50%):* INR ${advanceAmount}/-`,
@@ -857,7 +1001,7 @@ export const Booking = {
       `Phone: ${this.state.userDetails.phone}`,
       `Email: ${this.state.userDetails.email || "N/A"}`,
       `Route: ${getTerminalName(this.state.from).split(" (")[0]} to ${getTerminalName(this.state.to)}`,
-      `Date/Time: ${this.state.date} @ ${this.state.time}`,
+      `Date/Time: ${this.state.isNow ? `IMMEDIATE DISPATCH / NOW (${this.state.date} @ ${this.state.time})` : `${this.state.date} @ ${this.state.time}`}`,
       `Travellers: ${this.state.passengers}`,
       `Duration: ${this.state.days} day${this.state.days > 1 ? "s" : ""}`,
       `Vehicle: ${vehicleName}`,
@@ -926,6 +1070,10 @@ export const Booking = {
         <div class="summary-details-item">
           <span class="summary-details-label"><i class="fa-solid fa-car"></i> Vehicle Category</span>
           <span class="summary-details-value highlight">${vehicles.find(v => v.id === this.state.vehicleId)?.name || 'Standard'}</span>
+        </div>
+        <div class="summary-details-item">
+          <span class="summary-details-label"><i class="fa-solid fa-calendar-check"></i> Departure</span>
+          <span class="summary-details-value ${this.state.isNow ? 'highlight' : ''}">${this.state.isNow ? `⚡ Leaving Now (${this.state.time})` : (this.state.date ? `${this.state.date} @ ${this.state.time}` : 'Pending schedule')}</span>
         </div>
       </div>
 

@@ -13,6 +13,7 @@
    ========================================== */
 
 import { packages as DEFAULT_PACKAGES, CATEGORY_ORDER, CATEGORY_LABELS } from '../data/packages.js';
+import { escapeHtml, escapeAttr } from '../utils/escape.js';
 
 const ADMIN_PASSCODE = 'hills2026';       // TODO: change this
 const STORAGE_KEY = 'hh.packages.override';
@@ -228,10 +229,3 @@ export const packages = ${JSON.stringify(list, null, 2)};
     this._flashTimer = setTimeout(() => { s.style.display = 'none'; }, 4000);
   }
 };
-
-function escapeHtml(str) {
-  return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-}
-function escapeAttr(str) {
-  return String(str ?? '').replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
-}

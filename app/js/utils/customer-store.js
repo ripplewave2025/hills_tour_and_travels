@@ -48,11 +48,12 @@ export const CustomerStore = {
       return { ...record, createdAt: new Date().toISOString(), _source: 'local' };
     }
 
-    const { data, error } = await supabase
+    // NOTE: no .select() chained here. RLS lets anon INSERT but NOT SELECT
+    // (bookings hold customer PII), and a `.select()` read-back would be
+    // rejected by RLS and wrongly report a successful insert as failed.
+    const { error } = await supabase
       .from('bookings')
-      .insert([record])
-      .select()
-      .single();
+      .insert([record]);
 
     if (error) {
       console.warn('[customer-store] Supabase insert failed, falling back to localStorage:', error.message);
@@ -60,7 +61,7 @@ export const CustomerStore = {
       return { ...record, createdAt: new Date().toISOString(), _source: 'local' };
     }
 
-    return { ...data, _source: 'supabase' };
+    return { ...record, createdAt: new Date().toISOString(), _source: 'supabase' };
   },
 
   async list() {

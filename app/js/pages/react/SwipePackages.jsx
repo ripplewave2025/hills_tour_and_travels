@@ -261,8 +261,15 @@ export function SwipePackages({ query }) {
     touchStartX.current = null;
   };
 
+  // When switching tabs, `items` changes synchronously but `order` only resets
+  // in an effect a frame later. Rendering the stale order over the new items
+  // briefly drops cards to null and promotes a small queued card into the
+  // full-size slot — the "ballistic" resize. Derive a render-safe order that
+  // always matches the current item count so the stage size stays consistent.
+  const renderOrder = order.length === items.length ? order : startOrder(items.length);
+
   // The visible "active" card is the 2nd in DOM order (nth-child(2))
-  const activeIndex = order.length > 1 ? order[1] : (order[0] ?? 0);
+  const activeIndex = renderOrder.length > 1 ? renderOrder[1] : (renderOrder[0] ?? 0);
 
   return (
     <div className="hpkg-root">
@@ -365,8 +372,8 @@ export function SwipePackages({ query }) {
           onTouchStart={onTouchStart}
           onTouchEnd={onTouchEnd}
         >
-          <div className="hpkg-slide">
-            {order.map((itemIdx) => {
+          <div className="hpkg-slide" key={activeTab}>
+            {renderOrder.map((itemIdx) => {
               const item = items[itemIdx];
               if (!item) return null;
               return (

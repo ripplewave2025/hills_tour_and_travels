@@ -1,15 +1,38 @@
-The words in the hero page are still jumbled up. screenshot is in ![hero page feedback](feedback_screenshot/hero_page_clutter.jpeg)
+Images of tourism places under destination: 
+Darjeeling
+Gangtok
+Siliguri
+Kalimpong
+Kurseong
+Mirik
+Sittong
+Lava and lolegoan
+Lamahatta and Takdah
+Reshi Khola
+Teesta
+Darjeeling zoo
+Rock Garden
+Tinchulay
+Ropeway
+Tiger hill
+Ghoom Monastery
+Batasia Loop
+Peace Pagoda
+Happy valley Tea Estate
+Lebong Race Course
+Mirik Lake
 
-1. put the toggle bar right between the hills tour and travels logo and navbar, Navbar is too big, get the amazing navbar premium one replace hamburger with another one make it premium
+batasia loop: https://share.google/f3NZynAAWrYXPxSlk
 
-Pickup location ride from is peeking from below it should be on another page
-The one that is coming up sunrise on kunchunjunga, tiger hill at dawn remove that 
-trust one, trusted by 850 travellers should be up right below the hills tour and travels 
-Book now should be right where the whatsapp is and explore package to the left I want this clean as possible.
+Peace Pagoda : https://share.google/tdQDULNICI4Y0F6Bi
 
+shruberry Nightinglge Park : https://share.google/lGXeGUEqEy4Mhwrqj
 
-Packages slider.
+observatory hill: https://share.google/JKQWTfrKymsmrXQaA
 
-Get the code from https://codepen.io/MDJAmin/pen/GgpdKPy
+Zoo : https://share.google/PRFTVuu9lfsjlugAn   
 
-I have also put 
+Dali Monastery: https://share.google/s3rP6xABmAgGTChtH
+
+Botanical Garden: https://share.google/fvJH0hIkWqEHKbgFu
+
