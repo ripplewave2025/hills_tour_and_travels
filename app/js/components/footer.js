@@ -30,10 +30,9 @@ export const Footer = {
               The leading mountain mobility aggregator in the Eastern Himalayas. Delivering seamless, transparent, and syndicate-free travel experiences across Darjeeling, Sikkim, Nepal, and Bhutan.
             </p>
             <div class="social-icons" style="margin-top: 24px;">
-              <a href="#" aria-label="Facebook"><i class="fa-brands fa-facebook-f"></i></a>
-              <a href="#" aria-label="Instagram"><i class="fa-brands fa-instagram"></i></a>
-              <a href="#" aria-label="Twitter"><i class="fa-brands fa-twitter"></i></a>
-              <a href="https://maps.app.goo.gl/dRQPBFm6hTsZzNE2A" target="_blank" aria-label="Google Maps"><i class="fa-brands fa-google"></i></a>
+              <a href="https://www.facebook.com/profile.php?id=61594465148219" target="_blank" rel="noopener noreferrer" aria-label="Facebook"><i class="fa-brands fa-facebook-f"></i></a>
+              <a href="https://www.instagram.com/hills_tour_and_travel" target="_blank" rel="noopener noreferrer" aria-label="Instagram"><i class="fa-brands fa-instagram"></i></a>
+              <a href="https://maps.app.goo.gl/dRQPBFm6hTsZzNE2A" target="_blank" rel="noopener noreferrer" aria-label="Google Maps"><i class="fa-brands fa-google"></i></a>
             </div>
           </div>
 
@@ -72,8 +71,13 @@ export const Footer = {
                 <span>Phulbari, Darjeeling, West Bengal 734101, India</span>
               </li>
               <li>
-                <i class="fa-solid fa-phone text-brand"></i>
-                <a href="tel:+919907219843">+91 99072 19843</a>
+                <i class="fa-brands fa-whatsapp text-brand"></i>
+                <a
+                  href="https://wa.me/919907219843?text=${encodeURIComponent('Hi! I would like to plan a trip with Hills Tour & Travels.')}"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="Contact Hills Tour and Travels on WhatsApp"
+                >WhatsApp: +91 99072 19843</a>
               </li>
               <li>
                 <i class="fa-solid fa-envelope text-brand"></i>

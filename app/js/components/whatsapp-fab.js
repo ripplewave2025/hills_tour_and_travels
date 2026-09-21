@@ -5,9 +5,17 @@
 export const WhatsAppFab = {
   render() {
     return `
-      <div class="whatsapp-fab" id="whatsapp-fab-btn" aria-label="Chat on WhatsApp">
+      <a
+        class="whatsapp-fab"
+        id="whatsapp-fab-btn"
+        href="https://wa.me/919907219843"
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label="Chat with Hills Tour and Travels on WhatsApp"
+        title="Chat on WhatsApp"
+      >
         <i class="fa-brands fa-whatsapp"></i>
-      </div>
+      </a>
     `;
   },
 
@@ -15,7 +23,7 @@ export const WhatsAppFab = {
     const fab = document.getElementById("whatsapp-fab-btn");
     
     if (fab) {
-      fab.addEventListener("click", () => {
+      const updateWhatsAppLink = () => {
         const hash = window.location.hash || "#/";
         let message = "Hi! I am planning a tour in the Eastern Himalayas and would like to inquire about your premium taxi and tour services.";
         
@@ -29,14 +37,19 @@ export const WhatsAppFab = {
         }
 
         const phone = "919907219843"; // Match footer contact
-        const url = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
-        
-        window.open(url, "_blank");
-      });
+        fab.href = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
+      };
+
+      updateWhatsAppLink();
+      window.addEventListener("hashchange", updateWhatsAppLink);
+      this.removeHashChangeListener = () => window.removeEventListener("hashchange", updateWhatsAppLink);
     }
   },
 
   destroy() {
-    // Cleanup if any
+    if (this.removeHashChangeListener) {
+      this.removeHashChangeListener();
+      this.removeHashChangeListener = null;
+    }
   }
 };
