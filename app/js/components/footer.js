@@ -30,6 +30,7 @@ export const Footer = {
               The leading mountain mobility aggregator in the Eastern Himalayas. Delivering seamless, transparent, and syndicate-free travel experiences across Darjeeling, Sikkim, Nepal, and Bhutan.
             </p>
             <div class="social-icons" style="margin-top: 24px;">
+              <a href="https://wa.me/919907219843?text=Hi%20Hills%20Tour%20%26%20Travels%2C%20I%27d%20like%20to%20book%20a%20trip!" target="_blank" rel="noopener noreferrer" aria-label="WhatsApp"><i class="fa-brands fa-whatsapp"></i></a>
               <a href="https://www.facebook.com/profile.php?id=61594465148219" target="_blank" rel="noopener noreferrer" aria-label="Facebook"><i class="fa-brands fa-facebook-f"></i></a>
               <a href="https://www.instagram.com/hills_tour_and_travel" target="_blank" rel="noopener noreferrer" aria-label="Instagram"><i class="fa-brands fa-instagram"></i></a>
               <a href="https://maps.app.goo.gl/dRQPBFm6hTsZzNE2A" target="_blank" rel="noopener noreferrer" aria-label="Google Maps"><i class="fa-brands fa-google"></i></a>
