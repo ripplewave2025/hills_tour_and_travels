@@ -72,6 +72,13 @@ export const Footer = {
                 <span>Phulbari, Darjeeling, West Bengal 734101, India</span>
               </li>
               <li>
+                <i class="fa-solid fa-phone text-brand"></i>
+                <a
+                  href="tel:+917872599104"
+                  aria-label="Call Hills Tour and Travels"
+                >Call: +91 78725 99104</a>
+              </li>
+              <li>
                 <i class="fa-brands fa-whatsapp text-brand"></i>
                 <a
                   href="https://wa.me/919907219843?text=${encodeURIComponent('Hi! I would like to plan a trip with Hills Tour & Travels.')}"
